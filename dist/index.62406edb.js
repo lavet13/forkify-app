@@ -46,6 +46,7 @@ const showRecipe = async function(url) {
         }));
         console.log(recipe);
         const { id , cookingTime , imageUrl , ingredients , publisher , servings , sourceUrl , title  } = recipe;
+        const ingredientsMarkup = ingredients.reduce((str, cur)=>{}, "");
         const markup = `
             <figure class="recipe__fig">
                 <img src="${imageUrl}" alt="${title}" class="recipe__img" />
