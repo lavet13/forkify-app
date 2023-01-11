@@ -46,7 +46,6 @@ const showRecipe = async function(url) {
         }));
         console.log(recipe);
         const { id , cookingTime , imageUrl , ingredients , publisher , servings , sourceUrl , title  } = recipe;
-        const ingredientsMarkup = ingredients.reduce((str, cur)=>{}, "");
         const markup = `
             <figure class="recipe__fig">
                 <img src="${imageUrl}" alt="${title}" class="recipe__img" />
@@ -101,16 +100,20 @@ const showRecipe = async function(url) {
                 <h2 class="heading--2">Recipe ingredients</h2>
                 
                 <ul class="recipe__ingredient-list">
-                    <li class="recipe__ingredient">
-                        <svg class="recipe__icon">
-                            <use href="src/img/icons.svg#icon-check"></use>
-                        </svg>
-                        <div class="recipe__quantity">1000</div>
-                        <div class="recipe__description">
-                            <span class="recipe__unit">g</span>
-                            pasta
-                        </div>
-                    </li>
+                    ${ingredients.map(({ quantity , unit , description  })=>{
+            return `
+                            <li class="recipe__ingredient">
+                            <svg class="recipe__icon">
+                                <use href="src/img/icons.svg#icon-check"></use>
+                            </svg>
+                            <div class="recipe__quantity">${quantity}</div>
+                            <div class="recipe__description">
+                                <span class="recipe__unit">${unit}</span>
+                                ${description}
+                            </div>
+                            </li>
+                        `;
+        }).join("")}
                 </ul>
             </div>
 
@@ -118,12 +121,12 @@ const showRecipe = async function(url) {
                 <h2 class="heading--2">How to cook it</h2>
                 <p class="recipe__directions-text">
                     This recipe was carefully designed and tested by
-                    <span class="recipe__publisher">The Pioneer Woman</span>. Please check out
+                    <span class="recipe__publisher">${publisher}</span>. Please check out
                     directions at their website.
                 </p>
                 <a
                     class="btn--small recipe__btn"
-                    href="http://thepioneerwoman.com/cooking/pasta-with-tomato-cream-sauce/"
+                    href="${sourceUrl}"
                     target="_blank"
                 >
                     <span>Directions</span>
@@ -133,8 +136,8 @@ const showRecipe = async function(url) {
                 </a>
             </div>
         `;
-        recipeContainer.querySelector(".message").style.display = "none";
-        recipeContainer.insertAdjacentHTML("beforeend", markup);
+        recipeContainer.replaceChildren();
+        recipeContainer.insertAdjacentHTML("afterbegin", markup);
     } catch (err) {
         alert(err);
     }
