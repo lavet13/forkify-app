@@ -1,13 +1,13 @@
-8020
+8023
 169E:\______js\javascript courses\the-complete-javascript-course\18 Forkify App_ Building a Modern Application\starter\node_modules\lightningcss-win32-x64-msvc\package.json133176658625374454 0
 155E:\______js\javascript courses\the-complete-javascript-course\18 Forkify App_ Building a Modern Application\starter\node_modules\core-js\es\regexp\flags.js133177532061980670 0
-120E:\______js\javascript courses\the-complete-javascript-course\18 Forkify App_ Building a Modern Application\starter\dist133179236267255269 1
+120E:\______js\javascript courses\the-complete-javascript-course\18 Forkify App_ Building a Modern Application\starter\dist133179292711406490 1
 161E:\______js\javascript courses\the-complete-javascript-course\18 Forkify App_ Building a Modern Application\starter\node_modules\@parcel\transformer-posthtml\src133176658632679965 1
 144E:\______js\javascript courses\the-complete-javascript-course\18 Forkify App_ Building a Modern Application\starter\forkify-flowchart-part-1.png132886955210000000 0
 173E:\______js\javascript courses\the-complete-javascript-course\18 Forkify App_ Building a Modern Application\starter\node_modules\core-js\modules\es.array.unscopables.flat.js133177532057573381 0
 155E:\______js\javascript courses\the-complete-javascript-course\18 Forkify App_ Building a Modern Application\starter\node_modules\core-js\full\map\upsert.js133177532074952696 0
 171E:\______js\javascript courses\the-complete-javascript-course\18 Forkify App_ Building a Modern Application\starter\node_modules\core-js\features\array\virtual\includes.js133177532064179320 0
-126E:\______js\javascript courses\the-complete-javascript-course\18 Forkify App_ Building a Modern Application\starter\.gitignore133175534815170972 0
+126E:\______js\javascript courses\the-complete-javascript-course\18 Forkify App_ Building a Modern Application\starter\.gitignore133179294164343690 0
 164E:\______js\javascript courses\the-complete-javascript-course\18 Forkify App_ Building a Modern Application\starter\node_modules\update-browserslist-db\package.json133175530929615473 0
 161E:\______js\javascript courses\the-complete-javascript-course\18 Forkify App_ Building a Modern Application\starter\node_modules\css-what\lib\commonjs\index.d.ts133176658648311901 0
 146E:\______js\javascript courses\the-complete-javascript-course\18 Forkify App_ Building a Modern Application\starter\node_modules\@msgpackr-extract133177534693863521 1
@@ -46,7 +46,7 @@
 142E:\______js\javascript courses\the-complete-javascript-course\18 Forkify App_ Building a Modern Application\starter\node_modules\color-convert133175531143396752 1
 160E:\______js\javascript courses\the-complete-javascript-course\18 Forkify App_ Building a Modern Application\starter\node_modules\caniuse-lite\data\regions\CA.js133175530934802280 0
 167E:\______js\javascript courses\the-complete-javascript-course\18 Forkify App_ Building a Modern Application\starter\node_modules\core-js\features\instance\ends-with.js133177532056923777 0
-126E:\______js\javascript courses\the-complete-javascript-course\18 Forkify App_ Building a Modern Application\starter\index.html133176686030605066 0
+126E:\______js\javascript courses\the-complete-javascript-course\18 Forkify App_ Building a Modern Application\starter\index.html133179281897837598 0
 149E:\______js\javascript courses\the-complete-javascript-course\18 Forkify App_ Building a Modern Application\starter\node_modules\core-js\actual\error133177532073723449 1
 168E:\______js\javascript courses\the-complete-javascript-course\18 Forkify App_ Building a Modern Application\starter\node_modules\core-js\es\typed-array\float32-array.js133177532062240509 0
 174E:\______js\javascript courses\the-complete-javascript-course\18 Forkify App_ Building a Modern Application\starter\node_modules\csso\lib\restructure\2-initialMergeRuleset.js133176658629072180 0
@@ -84,7 +84,7 @@
 160E:\______js\javascript courses\the-complete-javascript-course\18 Forkify App_ Building a Modern Application\starter\node_modules\@parcel\utils\src\objectHash.js133176658659255168 0
 124E:\______js\javascript courses\the-complete-javascript-course\18 Forkify App_ Building a Modern Application\starter\src\sass133175499827324042 1
 169E:\______js\javascript courses\the-complete-javascript-course\18 Forkify App_ Building a Modern Application\starter\node_modules\core-js\stable\typed-array\int8-array.js133177532065648417 0
-136E:\______js\javascript courses\the-complete-javascript-course\18 Forkify App_ Building a Modern Application\starter\src\js\controller.js133179241362454958 0
+136E:\______js\javascript courses\the-complete-javascript-course\18 Forkify App_ Building a Modern Application\starter\src\js\controller.js133179292710227205 0
 163E:\______js\javascript courses\the-complete-javascript-course\18 Forkify App_ Building a Modern Application\starter\node_modules\sass\types\logger\source_span.d.ts133175531438284458 0
 170E:\______js\javascript courses\the-complete-javascript-course\18 Forkify App_ Building a Modern Application\starter\node_modules\@swc\helpers\src\_to_consumable_array.mjs133176658676154774 0
 160E:\______js\javascript courses\the-complete-javascript-course\18 Forkify App_ Building a Modern Application\starter\node_modules\caniuse-lite\data\regions\ET.js133175530942117784 0
@@ -175,7 +175,7 @@
 170E:\______js\javascript courses\the-complete-javascript-course\18 Forkify App_ Building a Modern Application\starter\node_modules\caniuse-lite\data\features\geolocation.js133175530943916682 0
 156E:\______js\javascript courses\the-complete-javascript-course\18 Forkify App_ Building a Modern Application\starter\node_modules\sass\types\value\index.d.ts133175531438004629 0
 170E:\______js\javascript courses\the-complete-javascript-course\18 Forkify App_ Building a Modern Application\starter\node_modules\core-js\proposals\map-update-or-insert.js133177532067707148 0
-131E:\______js\javascript courses\the-complete-javascript-course\18 Forkify App_ Building a Modern Application\starter\dist\index.html133179234021618980 0
+131E:\______js\javascript courses\the-complete-javascript-course\18 Forkify App_ Building a Modern Application\starter\dist\index.html133179282770265931 0
 162E:\______js\javascript courses\the-complete-javascript-course\18 Forkify App_ Building a Modern Application\starter\node_modules\core-js\features\instance\find.js133177532061730829 0
 145E:\______js\javascript courses\the-complete-javascript-course\18 Forkify App_ Building a Modern Application\starter\node_modules\v8-compile-cache133176658632140294 1
 180E:\______js\javascript courses\the-complete-javascript-course\18 Forkify App_ Building a Modern Application\starter\node_modules\@parcel\transformer-react-refresh-wrap\package.json133176658639277464 0
@@ -2315,7 +2315,7 @@
 160E:\______js\javascript courses\the-complete-javascript-course\18 Forkify App_ Building a Modern Application\starter\node_modules\css-tree\lib\syntax\node\Nth.js133176658670028544 0
 149E:\______js\javascript courses\the-complete-javascript-course\18 Forkify App_ Building a Modern Application\starter\node_modules\msgpackr\unpack.d.ts133176658659025316 0
 158E:\______js\javascript courses\the-complete-javascript-course\18 Forkify App_ Building a Modern Application\starter\node_modules\core-js\full\instance\fill.js133177532060941321 0
-139E:\______js\javascript courses\the-complete-javascript-course\18 Forkify App_ Building a Modern Application\starter\dist\icons.21bad73c.svg133179234021179253 0
+139E:\______js\javascript courses\the-complete-javascript-course\18 Forkify App_ Building a Modern Application\starter\dist\icons.21bad73c.svg133179287754807216 0
 147E:\______js\javascript courses\the-complete-javascript-course\18 Forkify App_ Building a Modern Application\starter\node_modules\msgpackr\unpack.js133176658650380624 0
 166E:\______js\javascript courses\the-complete-javascript-course\18 Forkify App_ Building a Modern Application\starter\node_modules\core-js\internals\define-built-ins.js133177532056274181 0
 160E:\______js\javascript courses\the-complete-javascript-course\18 Forkify App_ Building a Modern Application\starter\node_modules\caniuse-lite\data\regions\KG.js133175530945815510 0
@@ -2645,6 +2645,7 @@
 148E:\______js\javascript courses\the-complete-javascript-course\18 Forkify App_ Building a Modern Application\starter\node_modules\json5\dist\index.js133176658628762369 0
 171E:\______js\javascript courses\the-complete-javascript-course\18 Forkify App_ Building a Modern Application\starter\node_modules\core-js\modules\es.object.is-extensible.js133177532058033102 0
 173E:\______js\javascript courses\the-complete-javascript-course\18 Forkify App_ Building a Modern Application\starter\node_modules\core-js\features\string\virtual\match-all.js133177532067976984 0
+142E:\______js\javascript courses\the-complete-javascript-course\18 Forkify App_ Building a Modern Application\starter\dist\index.e37f48ea.js.map133179292711366510 0
 148E:\______js\javascript courses\the-complete-javascript-course\18 Forkify App_ Building a Modern Application\starter\node_modules\htmlnano\index.d.ts133176658665101574 0
 180E:\______js\javascript courses\the-complete-javascript-course\18 Forkify App_ Building a Modern Application\starter\node_modules\htmlnano\lib\modules\collapseAttributeWhitespace.js133176658633379550 0
 169E:\______js\javascript courses\the-complete-javascript-course\18 Forkify App_ Building a Modern Application\starter\node_modules\@parcel\reporter-dev-server\package.json133176658650090808 0
@@ -3261,6 +3262,7 @@
 181E:\______js\javascript courses\the-complete-javascript-course\18 Forkify App_ Building a Modern Application\starter\node_modules\@parcel\optimizer-image\parcel-image.darwin-x64.node133176658655107722 0
 146E:\______js\javascript courses\the-complete-javascript-course\18 Forkify App_ Building a Modern Application\starter\node_modules\csso\CHANGELOG.md133176658658905391 0
 170E:\______js\javascript courses\the-complete-javascript-course\18 Forkify App_ Building a Modern Application\starter\node_modules\core-js\modules\esnext.symbol.metadata.js133177532060401641 0
+138E:\______js\javascript courses\the-complete-javascript-course\18 Forkify App_ Building a Modern Application\starter\dist\index.e37f48ea.js133179292711296559 0
 138E:\______js\javascript courses\the-complete-javascript-course\18 Forkify App_ Building a Modern Application\starter\node_modules\csso\dist133176658650980257 1
 155E:\______js\javascript courses\the-complete-javascript-course\18 Forkify App_ Building a Modern Application\starter\node_modules\core-js\full\string\raw.js133177532069785870 0
 165E:\______js\javascript courses\the-complete-javascript-course\18 Forkify App_ Building a Modern Application\starter\node_modules\core-js\full\function\is-callable.js133177532065738358 0
@@ -7140,7 +7142,7 @@
 154E:\______js\javascript courses\the-complete-javascript-course\18 Forkify App_ Building a Modern Application\starter\node_modules\@parcel\core\src\types.js133176658675994891 0
 169E:\______js\javascript courses\the-complete-javascript-course\18 Forkify App_ Building a Modern Application\starter\node_modules\abortcontroller-polyfill\src\ponyfill.js133176658640636626 0
 166E:\______js\javascript courses\the-complete-javascript-course\18 Forkify App_ Building a Modern Application\starter\node_modules\abortcontroller-polyfill\src\utils.js133176658641765924 0
-139E:\______js\javascript courses\the-complete-javascript-course\18 Forkify App_ Building a Modern Application\starter\dist\index.f7626f62.css133179234021169262 0
+139E:\______js\javascript courses\the-complete-javascript-course\18 Forkify App_ Building a Modern Application\starter\dist\index.f7626f62.css133179287754847197 0
 182E:\______js\javascript courses\the-complete-javascript-course\18 Forkify App_ Building a Modern Application\starter\node_modules\abortcontroller-polyfill\dist\polyfill-patch-fetch.js133176658639437368 0
 174E:\______js\javascript courses\the-complete-javascript-course\18 Forkify App_ Building a Modern Application\starter\node_modules\abortcontroller-polyfill\dist\umd-polyfill.js133176658641556061 0
 163E:\______js\javascript courses\the-complete-javascript-course\18 Forkify App_ Building a Modern Application\starter\node_modules\@parcel\package-manager\index.d.ts133176658659385089 0
@@ -8015,7 +8017,8 @@
 138E:\______js\javascript courses\the-complete-javascript-course\18 Forkify App_ Building a Modern Application\starter\node_modules\.bin\svgo133176658681711366 0
 142E:\______js\javascript courses\the-complete-javascript-course\18 Forkify App_ Building a Modern Application\starter\node_modules\.bin\svgo.ps1133176658681711366 0
 144E:\______js\javascript courses\the-complete-javascript-course\18 Forkify App_ Building a Modern Application\starter\node_modules\.bin\terser.cmd133176658681711366 0
-141E:\______js\javascript courses\the-complete-javascript-course\18 Forkify App_ Building a Modern Application\starter\dist\favicon.8b2f57bf.png133179234021009362 0
-143E:\______js\javascript courses\the-complete-javascript-course\18 Forkify App_ Building a Modern Application\starter\dist\index.f7626f62.css.map133179234021259210 0
-138E:\______js\javascript courses\the-complete-javascript-course\18 Forkify App_ Building a Modern Application\starter\dist\logo.726d37a8.png133179234021259210 0
+141E:\______js\javascript courses\the-complete-javascript-course\18 Forkify App_ Building a Modern Application\starter\dist\favicon.8b2f57bf.png133179287754837199 0
+139E:\______js\javascript courses\the-complete-javascript-course\18 Forkify App_ Building a Modern Application\starter\dist\icons.dfd7a6db.svg133179287754837199 0
+143E:\______js\javascript courses\the-complete-javascript-course\18 Forkify App_ Building a Modern Application\starter\dist\index.f7626f62.css.map133179287754967122 0
+138E:\______js\javascript courses\the-complete-javascript-course\18 Forkify App_ Building a Modern Application\starter\dist\logo.726d37a8.png133179287754887172 0
 144E:\______js\javascript courses\the-complete-javascript-course\18 Forkify App_ Building a Modern Application\starter\dist\starter.3464ddca.js.map133179234021519051 0
