@@ -1,0 +1,90 @@
+STRUCTURE
+Like a house, software needs a structure: the way we organize our code
+
+MAINTAINABILITY
+A project is never done!
+We need to be able to easily change it in the future
+
+EXPANDABILITY
+We also need to be able to easily add new features
+
+The perfect architecture is basically one that allows for all these three aspects of structure maintainability and expandability
+In order to achieve that perfect architecture, we can of course create our own architecture from scratch.
+And that's exactly what we did in the Mapty project. However, that only works with a really small project like that one.
+
+We can use a well-established architecture pattern that developers have been using for years, or even for decades.
+And examples of that are MVC(model view controller), MVP(model view presenter), Flux and many other architectures.
+And so that is actually what we're going to do in the Forkify project, because it's a bit more complex than the Mapty project.
+Now these days, in modern web development, many developers actually use a framework like React, Angular, Vue or Svelte to take
+care of the architecture for them. And so in this case, developers don't have to think a lot about architecture on their own.
+And probably this is actually a good idea at a certain point, especially for large scale applications. However, and this is key,
+as I said many times before, it is very important that you really know JavaScript, before switching to some of these frameworks.
+And in my opinion, that includes knowing how to implement an architecture by yourself.
+
+No matter where the architecture comes from and who develops it, there are some components that any architecture must have, such as
+Business logic, State, HTTP library, Application logic(router), Presentation logic(UI layer).
+
+Business logic(the logic that is really related to solve the problem that the business set out to solve in the first place)
+👉 Code that solves the actual business problem;
+👉 Directly related to what business does and what it needs;
+👉 Example: sending messages, storing transactions, calculating taxes, ...
+
+State(application state is essentially what stores all the data about the application that is running in the browser, data about the application's front end)
+(So the state should store any data that you might fetch from an API or data that the user inputs or what page the user is currently viewing and so on)
+👉 Essentially stores all the data about the application
+👉 Should be the "single" source of truth"(if some data changes in the state, then the user interface should reflect that and the same is true the other way around)
+👉 UI should be kept in sync with the state
+👉 State libraries exist(storing and displaying data and keeping everything in sync is one of the most difficult tasks when building web applications. 
+And that's why there are actually many state management libraries like Redux or MobX). But in this project, we will keep things very simple and use a simple object 
+to store our entire state.
+
+HTTP library
+👉 Responsible for making and receiving AJAX requests
+👉 Optional but almost always necessary in real-world apps
+
+Application logic (Router)(this is the code that is only concerned about the implementation of the application itself, it's more the technical aspects
+of the application which are not directly related to the underlying business problem, for example, application logic includes handling of UI events
+and navigation on the page. That's the reason why this component is many times also called a router, so mapping actions to the user's navigation)
+👉 Code that is only concerned about the implementation of application itself;
+👉 Handles navigation and UI events
+
+Presentation logic(UI Layer)(is all about the visible part of the application, so essentially, we can say that the presentation logic is responsible for displaying the
+application state on the user interface in order to keep everything in sync)
+👉 Code that is concerned about the visible part of the application
+👉 Essentially displays application state
+
+Now any good architecture has a way of separating all these components, so instead of mixing everything together in one big file and in one big mess.
+And so let's now take a look at a well established architecture pattern that we're going to use in this project. And that is MVC(model view controller).
+
+
+So basically, this architecture contains three big parts, which are the Model, the View and Controller.
+
+the View is of course for the presentation logic so it's part of the application interacting with the user.
+
+The Model is all about the application's data and so that's why it usually contains the state and also the business logic that manipulates the state.
+So these two should be kept closely together. Now, the Model is also what contains the HTTP library that might get some data from the web. So like from some API
+or some backend. And so this is of course also about the data, and so it also goes into the Model.
+
+Finally, the Controller is what contains the application logic. And it kind of sits between the Model and the View. So it basically creates a bridge between the Model
+and a View, which in fact, should know nothing about each other. So again, the Model and the View will exist completely independent from one another, and not even knowing
+that the other one exists, basically. And in fact, one of the big goals of the MVC pattern so of this Model View Controller architecture is to actually separate business 
+logic from application logic, which makes developing the application so much easier. But as a consequence, we then need something to connect these two parts.
+And so that is the Controller. Some event happens on the UI, for example, like a click.
+
+So to start it's going to be the Controller who will handle that event, because handling an event is doing something in the application. And that's clearly part
+of the application logic. Now, this handling might involve updating the UI and also ask the Model for some data. So we can say that the controller dispatches tasks
+to Model and to the View or in other words, it controls and orchestrates this entire action. And in fact, the whole application itself. Now asking the Model for some data
+might of course involve doing an AJAX request to the web. And so that's exactly what the Model does. Then, when the data arrives, the controller takes the data and sends
+it to the View. And so finally to finish, the View will render that data to the UI, and finish this whole cycle.
+
+The Model and the View are in fact completely standalone and completely isolated. So again, they don't import each other and they don't even import the Controller.
+And in fact, they don't even know that the Controller exists. All they do is to basically just sit there waiting to get some instructions from the Controller.
+And this part is pretty important to understand.
+
+There are actually different ways of implementing the MVC pattern, where some are more complex than others, but this one is my favorite way of doing it, because I think
+it makes the most sense. But anyway, let's now see this MVC architecture applied to the part of the Forkify app. 
+
+Handling events is associated to the Controller. Then loading the recipe happens in the Model. So the controller basically calls some function that is in the Model.
+And then the Model asynchronously gets the recipe data from the API. And once that data has arrived, the controller asks for that data, receives it, sends it to the View
+which will then ultimately render the recipe on the screen. And that's it. So that's what every step of the flowchart is associated to in the MVC architecture.
+
