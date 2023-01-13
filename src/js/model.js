@@ -25,6 +25,7 @@ export async function loadRecipe(id) {
         const res = await fetch(
             `https://forkify-api.herokuapp.com/api/v2/recipes/${id}`
         );
+
         const { status } = res;
 
         if (!res.ok) {
@@ -32,9 +33,12 @@ export async function loadRecipe(id) {
             throw new Error(`${message} (${status})`);
         }
 
-        state.recipe = await res.json();
+        const newState = { ...state };
 
-        return state.recipe;
+        newState.recipe = await res.json();
+        const { recipe } = newState;
+
+        return recipe;
     } catch (err) {
         throw err;
     }

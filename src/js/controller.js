@@ -2,23 +2,51 @@ import 'core-js/stable'; //polyfilling everything else
 import 'regenerator-runtime/runtime'; // polyfilling async/await
 import icons from 'url:../img/icons.svg';
 
-import RecipeView from './recipe-view';
+import RecipeView from './views/recipe-view';
 import { loadRecipe } from './model';
 
-async function controlRecipes() {
+async function controlRecipe() {
     const id = window.location.hash.slice(1);
 
     if (!id) return;
 
-    const data = await loadRecipe(id);
+    await controlRecipes(this, id);
+}
+
+const getValidProperties = recipe =>
+    Object.fromEntries(
+        Object.entries(recipe).map(([key, value]) => {
+            const splitString = key.split('_');
+
+            if (splitString.length < 2) return [key, value];
+
+            const newKey = splitString.reduce((str, cur, i) => {
+                if (i === 0) return (str += cur);
+
+                return (str += cur.replace(cur[0], cur[0].toUpperCase()));
+            }, ``);
+
+            return [newKey, value];
+        })
+    );
+
+async function controlRecipes(recipeView, id) {
+    const recipeContainer = document.querySelector('.recipe');
+
+    recipeView.renderSpinner(recipeContainer);
+
+    const { data: recipe } = await Promise.race([loadRecipe(id), timeout(15)]);
+
+    const currentRecipe = getValidProperties(recipe);
+    console.log(currentRecipe);
 }
 
 function init() {
     const recipeView = new RecipeView();
-    recipeView.addHandlerRender(controlRecipes);
+    recipeView.addHandlerRender(controlRecipe);
 }
 
-const recipeContainer = document.querySelector('.recipe');
+init();
 
 const timeout = function (s) {
     return new Promise(function (_, reject) {
