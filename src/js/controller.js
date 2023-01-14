@@ -2,10 +2,11 @@ import 'core-js/stable'; //polyfilling everything else
 import 'regenerator-runtime/runtime'; // polyfilling async/await
 import icons from 'url:../img/icons.svg';
 
-import RecipeView from './views/recipe-view';
-import { loadRecipe } from './model';
+import { recipeView } from './views/recipeView';
+import * as Model from './model';
 
 async function controlRecipe() {
+    // application logic
     const id = window.location.hash.slice(1);
 
     if (!id) return;
@@ -31,18 +32,23 @@ const getValidProperties = recipe =>
     );
 
 async function controlRecipes(recipeView, id) {
-    const recipeContainer = document.querySelector('.recipe');
+    recipeView.renderSpinner();
 
-    recipeView.renderSpinner(recipeContainer);
+    const { loadRecipe } = Model;
 
-    const { data: recipe } = await Promise.race([loadRecipe(id), timeout(15)]);
+    await Promise.race([loadRecipe(id), timeout(15)]);
 
-    const currentRecipe = getValidProperties(recipe);
-    console.log(currentRecipe);
+    const {
+        state: { recipe },
+    } = Model;
+
+    const currentRecipe = JSON.parse(JSON.stringify(recipe));
+
+    const validRecipe = getValidProperties(currentRecipe);
+    await recipeView.render(validRecipe);
 }
 
 function init() {
-    const recipeView = new RecipeView();
     recipeView.addHandlerRender(controlRecipe);
 }
 

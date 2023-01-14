@@ -4,22 +4,7 @@ export const state = {
     bookmarks: [],
 };
 
-// const getJSON = async url => {
-//     try {
-//         const res = await fetch(url);
-//         const { status } = res;
-
-//         if (!res.ok) {
-//             const { message } = await res.json();
-//             throw new Error(`${message} (${status})`);
-//         }
-
-//         return await res.json();
-//     } catch (err) {
-//         throw err;
-//     }
-// };
-
+// business logic
 export async function loadRecipe(id) {
     try {
         const res = await fetch(
@@ -33,13 +18,13 @@ export async function loadRecipe(id) {
             throw new Error(`${message} (${status})`);
         }
 
-        const newState = { ...state };
+        const {
+            data: { recipe },
+        } = await res.json();
 
-        newState.recipe = await res.json();
-        const { recipe } = newState;
-
-        return recipe;
+        state.recipe = recipe;
     } catch (err) {
+        console.error(err);
         throw err;
     }
 }
