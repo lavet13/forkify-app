@@ -526,6 +526,16 @@ body {
   color: #918581;
 }
 
+.entire__recipe {
+  transition: transform .2s, opacity .1s;
+}
+
+.entire__recipe.hidden {
+  visibility: hidden;
+  opacity: 0;
+  transform: scaleY(.2)scaleX(.1);
+}
+
 .recipe {
   background-color: #f9f5f3;
 }

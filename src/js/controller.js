@@ -1,17 +1,50 @@
 import 'core-js/stable'; //polyfilling everything else
 import 'regenerator-runtime/runtime'; // polyfilling async/await
-import icons from 'url:../img/icons.svg';
 
-import { recipeView } from './views/recipeView';
+import recipeView from './views/recipeView';
 import * as Model from './model';
 
-async function controlRecipe() {
+// PUBLISHER-SUBSCRIBER PATTERN
+// We have a publisher which is soem code that knows when to react,
+// and in this case, that's going to be the addHandlerRender function in the view, because it will
+// contain the addEventListener method. And therefore, it will know when to react to the event.
+// Now, on the other hand, we have a subscriber which is code that actually wants to react.
+// So this is the code that should actually be executed when the event happens. And in this case,
+// that is the controlRecipes function that we have in the controller. And publisher doesn't know
+// yet that the subscriber even exists because that subscriber is in the controller that the view
+// cannot access. Solution is that we can now subscribe to the publisher by passing into subscriber
+// function as an argument. In practice that means as soon as the program loads, the init function
+// is called which in turn immediately calls the addHandlerRender function from the view.
+// As we call addHandlerRender, we pass in our controlRecipes function as an argument.
+// So essentially, we subscribe controlRecipes to addHandlerRender. And so at this point, the two
+// functions are basically finally connected. So now addHandlerRender listens for events using
+// the addEventListener method as always. And then as soon as the event actually happens,
+// the controlRecipes function will be called as the callback function of addEventListener.
+// Or in other words, as soon as the publisher(addHandlerRender) publishes an event, the subscriber(controlRecipes)
+// will get called.
+
+async function controlRecipes() {
     // application logic
-    const id = window.location.hash.slice(1);
+    try {
+        const id = window.location.hash.slice(1);
+        if (!id) return;
 
-    if (!id) return;
+        this.renderSpinner();
 
-    await controlRecipes(this, id);
+        const { loadRecipe } = Model;
+        await loadRecipe(id);
+
+        const {
+            state: { recipe },
+        } = Model;
+
+        const currentRecipe = JSON.parse(JSON.stringify(recipe));
+        const validRecipe = getValidProperties(currentRecipe);
+
+        await this.render(validRecipe);
+    } catch (err) {
+        this.renderError(err.message);
+    }
 }
 
 const getValidProperties = recipe =>
@@ -31,226 +64,19 @@ const getValidProperties = recipe =>
         })
     );
 
-async function controlRecipes(recipeView, id) {
-    recipeView.renderSpinner();
+// PUBLISHER-SUBSCRIBER PATTERN
+// We want handle events in the controller because otherwise, we would have application logic in the view and of course we don't want that
+// on the other hand we want to listen for events in the view because otherwise we would need DOM elements in the controller, and
+// we would basically have presentation logic in the controller which would be wrong in our MVC implementation.
+// Event listeners should be attached to DOM elements in the view, but the events should then be handled by controller functions that
+// live in the controller module.
 
-    const { loadRecipe } = Model;
+const init = function () {
+    recipeView.renderMessage();
 
-    await Promise.race([loadRecipe(id), timeout(15)]);
-
-    const {
-        state: { recipe },
-    } = Model;
-
-    const currentRecipe = JSON.parse(JSON.stringify(recipe));
-
-    const validRecipe = getValidProperties(currentRecipe);
-    await recipeView.render(validRecipe);
-}
-
-function init() {
-    recipeView.addHandlerRender(controlRecipe);
-}
+    recipeView.addHandlerRender(controlRecipes);
+};
 
 init();
 
-const timeout = function (s) {
-    return new Promise(function (_, reject) {
-        setTimeout(function () {
-            reject(
-                new Error(`Request took too long! Timeout after ${s} seconds`)
-            );
-        }, s * 1000);
-    });
-};
-
 // https://forkify-api.herokuapp.com/v2
-
-///////////////////////////////////////
-/*
-
-console.log('Test');
-
-const getJSON = async url => {
-    try {
-        const res = await fetch(url);
-        const { status } = res;
-
-        if (!res.ok) {
-            const { message } = await res.json();
-            throw new Error(`${message} (${status})`);
-        }
-
-        return await res.json();
-    } catch (err) {
-        throw err;
-    }
-};
-
-const renderSpinner = function (parentEl) {
-    const markup = `
-        <div class="spinner">
-          <svg>
-            <use href="${icons}#icon-loader"></use>
-          </svg>
-        </div>
-    `;
-
-    parentEl.replaceChildren();
-    parentEl.insertAdjacentHTML('afterbegin', markup);
-};
-
-const showRecipe = async function () {
-    try {
-        const id = window.location.hash.slice(1);
-
-        if (!id) return;
-
-        renderSpinner(recipeContainer);
-
-        const {
-            data: { recipe: recipeData },
-        } = await Promise.race([
-            getJSON(`https://forkify-api.herokuapp.com/api/v2/recipes/${id}`),
-            timeout(15),
-        ]);
-
-        let recipe = Object.fromEntries(
-            Object.entries(recipeData).map(([key, value]) => {
-                const str = key.split('_');
-
-                if (str.length < 2) return [key, value];
-
-                const finalStr = str
-                    .map((word, i) => {
-                        if (i === 0) return word;
-                        // return word[0].toUpperCase() + word.slice(1);
-                        return word.replace(word[0], word[0].toUpperCase());
-                    })
-                    .join('');
-
-                return [finalStr, value];
-            })
-        );
-        console.log(recipe);
-
-        const {
-            id: idGood,
-            cookingTime,
-            imageUrl,
-            ingredients,
-            publisher,
-            servings,
-            sourceUrl,
-            title,
-        } = recipe;
-
-        const markup = `
-            <figure class="recipe__fig">
-                <img src="${imageUrl}" alt="${title}" class="recipe__img" />
-                <h1 class="recipe__title">
-                    <span>${title}</span>
-                </h1>
-            </figure>
-
-            <div class="recipe__details">
-                <div class="recipe__info">
-                    <svg class="recipe__info-icon">
-                    <use href="${icons}#icon-clock"></use>
-                    </svg>
-                    <span class="recipe__info-data recipe__info-data--minutes">${cookingTime}</span>
-                    <span class="recipe__info-text">minutes</span>
-                </div>
-
-                <div class="recipe__info">
-                    <svg class="recipe__info-icon">
-                        <use href="${icons}#icon-users"></use>
-                    </svg>
-                    <span class="recipe__info-data recipe__info-data--people">${servings}</span>
-                    <span class="recipe__info-text">servings</span>
-                    <div class="recipe__info-buttons">
-                        <button class="btn--tiny btn--increase-servings">
-                            <svg>
-                            <use href="${icons}#icon-minus-circle"></use>
-                            </svg>
-                        </button>
-
-                        <button class="btn--tiny btn--increase-servings">
-                            <svg>
-                            <use href="${icons}#icon-plus-circle"></use>
-                            </svg>
-                        </button>
-                    </div>
-                </div>
-
-                <div class="recipe__user-generated">
-                    <svg>
-                        <use href="${icons}#icon-user"></use>
-                    </svg>
-                </div>
-                <button class="btn--round">
-                    <svg class="">
-                        <use href="${icons}#icon-bookmark-fill"></use>
-                    </svg>
-                </button>
-            </div>
-
-            <div class="recipe__ingredients">
-                <h2 class="heading--2">Recipe ingredients</h2>
-                
-                <ul class="recipe__ingredient-list">
-                    ${ingredients
-                        .map(({ quantity, unit, description }) => {
-                            return `
-                            <li class="recipe__ingredient">
-                            <svg class="recipe__icon">
-                                <use href="${icons}#icon-check"></use>
-                            </svg>
-                            <div class="recipe__quantity">${quantity}</div>
-                            <div class="recipe__description">
-                                <span class="recipe__unit">${unit}</span>
-                                ${description}
-                            </div>
-                            </li>
-                        `;
-                        })
-                        .join('')}
-                </ul>
-            </div>
-
-            <div class="recipe__directions">
-                <h2 class="heading--2">How to cook it</h2>
-                <p class="recipe__directions-text">
-                    This recipe was carefully designed and tested by
-                    <span class="recipe__publisher">${publisher}</span>. Please check out
-                    directions at their website.
-                </p>
-                <a
-                    class="btn--small recipe__btn"
-                    href="${sourceUrl}"
-                    target="_blank"
-                >
-                    <span>Directions</span>
-                    <svg class="search__icon">
-                        <use href="${icons}#icon-arrow-right"></use>
-                    </svg>
-                </a>
-            </div>
-        `;
-
-        recipeContainer.replaceChildren();
-
-        recipeContainer.insertAdjacentHTML('afterbegin', markup);
-    } catch (err) {
-        alert(err);
-    }
-};
-
-// showRecipe(
-//     // 'https://forkify-api.herokuapp.com/api/v2/recipes/5ed6604591c37cdc054bc886'
-//     'https://forkify-api.herokuapp.com/api/v2/recipes/5ed6604591c37cdc054bca36'
-// );
-
-['hashchange', 'load'].forEach(ev => window.addEventListener(ev, showRecipe));
-
-*/
