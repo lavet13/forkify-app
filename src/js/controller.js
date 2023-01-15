@@ -2,6 +2,8 @@ import 'core-js/stable'; //polyfilling everything else
 import 'regenerator-runtime/runtime'; // polyfilling async/await
 
 import recipeView from './views/recipeView';
+import recipesView from './views/recipesView';
+import { getValidProperties } from './helpers';
 import * as Model from './model';
 
 // PUBLISHER-SUBSCRIBER PATTERN
@@ -47,22 +49,28 @@ async function controlRecipes() {
     }
 }
 
-const getValidProperties = recipe =>
-    Object.fromEntries(
-        Object.entries(recipe).map(([key, value]) => {
-            const splitString = key.split('_');
+async function controlSearchResults(e) {
+    try {
+        e.preventDefault();
 
-            if (splitString.length < 2) return [key, value];
+        const { result } = Object.fromEntries(new FormData(e.target).entries());
 
-            const newKey = splitString.reduce((str, cur, i) => {
-                if (i === 0) return (str += cur);
+        this.renderSpinner();
 
-                return (str += cur.replace(cur[0], cur[0].toUpperCase()));
-            }, ``);
+        const { loadSearchResults } = Model;
+        const recipes = await loadSearchResults(result);
 
-            return [newKey, value];
-        })
-    );
+        const { recipes: recipesArray, results } = recipes;
+        const validRecipes = recipesArray.map(recipe =>
+            getValidProperties(recipe)
+        );
+        const currentRecipes = { results, recipes: validRecipes };
+
+        this.render(currentRecipes);
+    } catch (err) {
+        console.error(err);
+    }
+}
 
 // PUBLISHER-SUBSCRIBER PATTERN
 // We want handle events in the controller because otherwise, we would have application logic in the view and of course we don't want that
@@ -75,6 +83,10 @@ const init = function () {
     recipeView.renderMessage();
 
     recipeView.addHandlerRender(controlRecipes);
+    recipesView.addHandlerRender({
+        handler: controlSearchResults,
+        form: document.querySelector('.search'),
+    });
 };
 
 init();

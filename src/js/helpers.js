@@ -27,3 +27,20 @@ export const getJSON = async function (url) {
         throw err;
     }
 };
+
+export const getValidProperties = recipe =>
+    Object.fromEntries(
+        Object.entries(recipe).map(([key, value]) => {
+            const splitString = key.split('_');
+
+            if (splitString.length < 2) return [key, value];
+
+            const newKey = splitString.reduce((str, cur, i) => {
+                if (i === 0) return (str += cur);
+
+                return (str += cur.replace(cur[0], cur[0].toUpperCase()));
+            }, ``);
+
+            return [newKey, value];
+        })
+    );

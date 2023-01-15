@@ -1,4 +1,5 @@
 import { API_URL } from './config';
+import { API_KEY } from './config';
 import { getJSON } from './helpers';
 
 export const state = {
@@ -18,6 +19,21 @@ export async function loadRecipe(id) {
     } catch (err) {
         throw new Error(
             `We could not find that recipe. Please try another one!`
+        );
+    }
+}
+
+export async function loadSearchResults(query) {
+    try {
+        const {
+            results,
+            data: { recipes },
+        } = await getJSON(`${API_URL}?search=${query}&key=${API_KEY}`);
+
+        return { results, recipes };
+    } catch (err) {
+        throw new Error(
+            `We could not find recipes. Please try something else!`
         );
     }
 }
