@@ -59,9 +59,11 @@ class RecipeView {
         this.#parentEl.insertAdjacentHTML('afterbegin', markup);
     }
 
-    addHandlerRender(handler) {
-        ['hashchange', 'load'].forEach(ev =>
-            window.addEventListener(ev, handler.bind(this))
+    addHandlerRender({ handler, DOMElement, events }) {
+        if (events.length === 0) throw new Error("Events weren't specified!");
+
+        events.forEach(ev =>
+            DOMElement.addEventListener(ev, handler.bind(this))
         );
     }
 
@@ -86,6 +88,39 @@ class RecipeView {
         } catch (err) {
             throw err;
         }
+    }
+
+    async renderOnHistoryNavigation(html) {
+        try {
+            this.#parentEl.insertAdjacentHTML(
+                'beforeend',
+                `<div class="entire__recipe hidden">${html}</div>`
+            );
+
+            const image = this.#getImageFromRecipe(
+                this.#parentEl.querySelector('.entire__recipe')
+            );
+
+            await Promise.race([
+                this.#downloadImage(image),
+                timeout(TIMEOUT_SEC),
+            ]);
+
+            this.#parentEl.querySelector('.spinner') && this.#clearSpinner();
+        } catch (err) {
+            throw err;
+        }
+    }
+
+    pushURL(query) {
+        const url = new URL(window.location);
+
+        const newUrl = `${url.protocol}//${url.host}${url.pathname}${url.hash}`;
+        const JSONObject = JSON.stringify({
+            html: this.#parentEl.querySelector('.entire__recipe').outerHTML,
+        });
+
+        history.pushState(JSONObject, document.title, `${newUrl}`);
     }
 
     #downloadImage(image) {

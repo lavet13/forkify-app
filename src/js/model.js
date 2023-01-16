@@ -1,7 +1,6 @@
 import { API_URL } from './config';
 import { API_KEY } from './config';
 import { getJSON } from './helpers';
-import { processAjaxData } from './helpers';
 
 export const state = {
     recipe: {},
@@ -26,8 +25,6 @@ export async function loadRecipe(id) {
 
 export async function loadSearchResults(query) {
     try {
-        processAjaxData(query);
-
         const {
             results,
             data: { recipes },

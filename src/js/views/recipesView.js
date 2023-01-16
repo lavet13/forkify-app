@@ -1,4 +1,5 @@
 import icons from '../../img/icons.svg';
+import { historyPushURL } from '../helpers';
 
 class RecipesView {
     #parentEl = document.querySelector('.search-results');
@@ -98,6 +99,42 @@ class RecipesView {
             .join('')}</ul>`;
     }
 
+    async renderOnHistoryNavigation(html) {
+        try {
+            this.#parentEl.insertAdjacentHTML(
+                'beforeend',
+                `<ul class="results hidden">${html}</ul>`
+            );
+
+            const images = [
+                ...this.#parentEl.querySelectorAll('.preview__fig img'),
+            ];
+            const downloadedImages = await Promise.all(
+                this.#downloadImages(images)
+            );
+
+            this.#parentEl.querySelector('.results').classList.remove('hidden');
+            this.#parentEl.querySelector('.spinner') && this.#clearSpinner();
+
+            if (downloadedImages.length === 0)
+                throw new Error(`We couldn't find any recipes`);
+        } catch (err) {
+            throw err;
+        }
+    }
+
+    pushURL(query) {
+        const url = new URL(window.location);
+        url.searchParams.set('search', query);
+
+        const newUrl = `${url.protocol}//${url.host}${url.pathname}${url.search}`;
+        const JSONObject = JSON.stringify({
+            html: this.#parentEl.querySelector('.results').outerHTML,
+        });
+
+        history.pushState(JSONObject, document.title, `${newUrl}`);
+    }
+
     #downloadImages(images) {
         return images.map(
             image =>
@@ -121,8 +158,12 @@ class RecipesView {
         this.#parentEl.removeChild(element);
     }
 
-    addHandlerRender({ handler, DOMElement }) {
-        DOMElement.addEventListener('submit', handler.bind(this));
+    addHandlerRender({ handler, DOMElement, events }) {
+        if (events.length === 0) return new Error("Events weren't specified");
+
+        events.forEach(ev => {
+            DOMElement.addEventListener(ev, handler.bind(this));
+        });
     }
 }
 

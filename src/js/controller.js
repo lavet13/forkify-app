@@ -4,6 +4,7 @@ import 'regenerator-runtime/runtime'; // polyfilling async/await
 import recipeView from './views/recipeView';
 import recipesView from './views/recipesView';
 import { getValidProperties } from './helpers';
+import { historyPushURL } from './helpers';
 import * as Model from './model';
 
 // PUBLISHER-SUBSCRIBER PATTERN
@@ -44,10 +45,27 @@ async function controlRecipes() {
         const validRecipe = getValidProperties(currentRecipe);
 
         await this.render(validRecipe);
+
+        historyPushURL({ query: id, handler: this.pushURL.bind(this) });
     } catch (err) {
         this.renderError(err.message);
     }
 }
+
+const handleHistoryNavigationOnRecipe = async function (e) {
+    try {
+        if (e.state) {
+            this.renderSpinner();
+
+            const { html } = JSON.parse(e.state);
+            console.log(html);
+            await this.renderOnHistoryNavigation(html);
+        }
+    } catch (err) {
+        console.error(err);
+        err.message && this.renderError(err.message);
+    }
+};
 
 async function controlSearchResults(e) {
     try {
@@ -66,10 +84,28 @@ async function controlSearchResults(e) {
         const currentRecipes = { results, recipes: validRecipes };
 
         await this.render(currentRecipes);
+
+        historyPushURL({ query: result, handler: this.pushURL.bind(this) });
     } catch (err) {
+        console.error(err);
         err.message && this.renderError(err.message);
     }
 }
+
+const handleHistoryNavigationOnSearch = async function (e) {
+    try {
+        if (e.state) {
+            this.renderSpinner();
+
+            const { html } = JSON.parse(e.state);
+            console.log(html);
+            await this.renderOnHistoryNavigation(html);
+        }
+    } catch (err) {
+        console.error(err);
+        err.message && this.renderError(err.message);
+    }
+};
 
 // PUBLISHER-SUBSCRIBER PATTERN
 // We want handle events in the controller because otherwise, we would have application logic in the view and of course we don't want that
@@ -79,13 +115,33 @@ async function controlSearchResults(e) {
 // live in the controller module.
 
 const init = function () {
-    recipeView.renderMessage();
+    try {
+        recipeView.renderMessage();
 
-    recipeView.addHandlerRender(controlRecipes);
-    recipesView.addHandlerRender({
-        handler: controlSearchResults,
-        DOMElement: document.querySelector('.search'),
-    });
+        recipeView.addHandlerRender({
+            handler: controlRecipes,
+            DOMElement: window,
+            events: ['hashchange', 'load'],
+        });
+        recipeView.addHandlerRender({
+            handler: handleHistoryNavigationOnRecipe,
+            DOMElement: window,
+            events: ['popstate'],
+        });
+        ///////////////////////////////////////////////
+        recipesView.addHandlerRender({
+            handler: controlSearchResults,
+            DOMElement: document.querySelector('.search'),
+            events: ['submit'],
+        });
+        recipesView.addHandlerRender({
+            handler: handleHistoryNavigationOnSearch,
+            DOMElement: window,
+            events: ['popstate'],
+        });
+    } catch (err) {
+        console.error(err);
+    }
 };
 
 init();
