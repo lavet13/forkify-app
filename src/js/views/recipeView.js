@@ -82,10 +82,7 @@ class RecipeView {
                 timeout(TIMEOUT_SEC),
             ]);
 
-            this.#parentEl.querySelector('.spinner') &&
-                this.#clear(this.#parentEl.querySelector('.spinner'));
-            this.#parentEl.querySelector('.error') &&
-                this.#clear(this.#parentEl.querySelector('.error'));
+            this.#parentEl.querySelector('.spinner') && this.#clearSpinner();
         } catch (err) {
             throw err;
         }
@@ -110,6 +107,10 @@ class RecipeView {
 
     #clear(element) {
         this.#parentEl.removeChild(element);
+    }
+
+    #clearSpinner() {
+        this.#clear(this.#parentEl.querySelector('.spinner'));
     }
 
     async #generateMarkup() {

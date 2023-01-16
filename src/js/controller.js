@@ -31,10 +31,10 @@ async function controlRecipes() {
         const id = window.location.hash.slice(1);
         if (!id) return;
 
-        this.renderSpinner();
-
         const { loadRecipe } = Model;
         await loadRecipe(id);
+
+        this.renderSpinner();
 
         const {
             state: { recipe },
@@ -55,10 +55,9 @@ async function controlSearchResults(e) {
 
         const { result } = Object.fromEntries(new FormData(e.target).entries());
 
-        this.renderSpinner();
-
         const { loadSearchResults } = Model;
         const recipes = await loadSearchResults(result);
+        this.renderSpinner();
 
         const { recipes: recipesArray, results } = recipes;
         const validRecipes = recipesArray.map(recipe =>
@@ -66,9 +65,9 @@ async function controlSearchResults(e) {
         );
         const currentRecipes = { results, recipes: validRecipes };
 
-        this.render(currentRecipes);
+        await this.render(currentRecipes);
     } catch (err) {
-        console.error(err);
+        err.message && this.renderError(err.message);
     }
 }
 
@@ -85,7 +84,7 @@ const init = function () {
     recipeView.addHandlerRender(controlRecipes);
     recipesView.addHandlerRender({
         handler: controlSearchResults,
-        form: document.querySelector('.search'),
+        DOMElement: document.querySelector('.search'),
     });
 };
 

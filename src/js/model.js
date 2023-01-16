@@ -1,6 +1,7 @@
 import { API_URL } from './config';
 import { API_KEY } from './config';
 import { getJSON } from './helpers';
+import { processAjaxData } from './helpers';
 
 export const state = {
     recipe: {},
@@ -25,6 +26,8 @@ export async function loadRecipe(id) {
 
 export async function loadSearchResults(query) {
     try {
+        processAjaxData(query);
+
         const {
             results,
             data: { recipes },
@@ -32,8 +35,6 @@ export async function loadSearchResults(query) {
 
         return { results, recipes };
     } catch (err) {
-        throw new Error(
-            `We could not find recipes. Please try something else!`
-        );
+        throw err;
     }
 }

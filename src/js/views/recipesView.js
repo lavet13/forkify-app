@@ -1,4 +1,5 @@
 import icons from '../../img/icons.svg';
+
 class RecipesView {
     #parentEl = document.querySelector('.search-results');
     #data;
@@ -18,17 +19,52 @@ class RecipesView {
         this.#parentEl.insertAdjacentHTML('afterbegin', markup);
     }
 
-    render(data) {
-        this.#data = data;
+    renderError(message) {
+        const markup = `
+            <div class="error">
+                <div>
+                    <svg>
+                        <use href="${icons}#icon-alert-triangle"></use>
+                    </svg>
+                </div>
+                <p>${message}</p>
+            </div>
+        `;
 
-        const markup = this.#generateMarkup();
-        console.log(markup);
+        this.#parentEl.replaceChildren();
+        this.#parentEl.insertAdjacentHTML('afterbegin', markup);
+    }
+
+    async render(data) {
+        try {
+            this.#data = data;
+
+            const markup = this.#generateMarkup();
+            this.#parentEl.insertAdjacentHTML('beforeend', markup);
+
+            const images = [
+                ...this.#parentEl.querySelectorAll('.preview__fig img'),
+            ];
+
+            const downloadedImages = await Promise.all(
+                this.#downloadImages(images)
+            );
+            // console.log(downloadedImages);
+            this.#parentEl.querySelector('.results').classList.remove('hidden');
+
+            this.#parentEl.querySelector('.spinner') && this.#clearSpinner();
+
+            if (downloadedImages.length === 0)
+                throw new Error(`We couldn't find any recipes`);
+        } catch (err) {
+            throw err;
+        }
     }
 
     #generateMarkup() {
         const { recipes, results } = this.#data;
 
-        return recipes
+        return `<ul class="results hidden">${recipes
             .map(
                 ({ id, imageUrl, publisher, title }) =>
                     `
@@ -50,7 +86,7 @@ class RecipesView {
                             <div class="preview__user-generated">
                                 <svg>
                                     <use
-                                        href="src/img/icons.svg#icon-user"
+                                        href="${icons}#icon-user"
                                     ></use>
                                 </svg>
                             </div>
@@ -59,11 +95,34 @@ class RecipesView {
                 </li>
             `
             )
-            .join('');
+            .join('')}</ul>`;
     }
 
-    addHandlerRender({ handler, form }) {
-        form.addEventListener('submit', handler.bind(this));
+    #downloadImages(images) {
+        return images.map(
+            image =>
+                new Promise((resolve, reject) => {
+                    image.addEventListener('load', () => {
+                        resolve(image);
+                    });
+
+                    image.addEventListener('error', () => {
+                        reject(new Error('Cannot download the image'));
+                    });
+                })
+        );
+    }
+
+    #clearSpinner() {
+        this.#clear(this.#parentEl.querySelector('.spinner'));
+    }
+
+    #clear(element) {
+        this.#parentEl.removeChild(element);
+    }
+
+    addHandlerRender({ handler, DOMElement }) {
+        DOMElement.addEventListener('submit', handler.bind(this));
     }
 }
 
