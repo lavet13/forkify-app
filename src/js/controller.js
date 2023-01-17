@@ -26,15 +26,41 @@ import * as Model from './model';
 // Or in other words, as soon as the publisher(addHandlerRender) publishes an event, the subscriber(controlRecipes)
 // will get called.
 
-async function controlRecipes(e) {
-    // application logic
-    try {
-        e.preventDefault();
-        if (!e.target.closest('.preview__link')) return;
-        const id = e.target.closest('.preview__link').getAttribute('href');
-        console.log(`id = ${id}`);
-        if (!id) return;
+async function loadDataBasedOnURL() {
+    const url = new URL(window.location);
+    console.log(url.searchParams);
 
+    for (const [key, value] of url.searchParams) {
+        if (key === 'search') {
+            renderRecipeList.call(recipesView, value);
+        }
+
+        if (key === 'id') {
+            renderRecipe.call(recipeView, value);
+        }
+    }
+}
+
+async function renderRecipeList(query) {
+    try {
+        const { loadSearchResults } = Model;
+        const recipes = await loadSearchResults(query);
+        this.renderSpinner();
+
+        const { recipes: recipesArray, results } = recipes;
+        const validRecipes = recipesArray.map(recipe =>
+            getValidProperties(recipe)
+        );
+        const currentRecipes = { results, recipes: validRecipes };
+
+        await this.render(currentRecipes);
+    } catch (err) {
+        throw err;
+    }
+}
+
+async function renderRecipe(id) {
+    try {
         const { loadRecipe } = Model;
         await loadRecipe(id);
 
@@ -48,6 +74,21 @@ async function controlRecipes(e) {
         const validRecipe = getValidProperties(currentRecipe);
 
         await this.render(validRecipe);
+    } catch (err) {
+        throw err;
+    }
+}
+
+async function controlRecipes(e) {
+    // application logic
+    try {
+        e.preventDefault();
+
+        if (!e.target.closest('.preview__link')) return;
+        const id = e.target.closest('.preview__link').getAttribute('href');
+        if (!id) return;
+
+        await renderRecipe.call(this, id);
 
         historyPushURL({ query: id, handler: this.pushURL.bind(this) });
     } catch (err) {
@@ -76,17 +117,7 @@ async function controlSearchResults(e) {
 
         const { result } = Object.fromEntries(new FormData(e.target).entries());
 
-        const { loadSearchResults } = Model;
-        const recipes = await loadSearchResults(result);
-        this.renderSpinner();
-
-        const { recipes: recipesArray, results } = recipes;
-        const validRecipes = recipesArray.map(recipe =>
-            getValidProperties(recipe)
-        );
-        const currentRecipes = { results, recipes: validRecipes };
-
-        await this.render(currentRecipes);
+        await renderRecipeList.call(this, result);
 
         historyPushURL({ query: result, handler: this.pushURL.bind(this) });
     } catch (err) {
@@ -142,6 +173,9 @@ const init = function () {
             DOMElement: window,
             events: ['popstate'],
         });
+        ////////////////////////////////////////////////
+        // Produce data based on url
+        window.addEventListener('load', loadDataBasedOnURL);
     } catch (err) {
         console.error(err);
     }
