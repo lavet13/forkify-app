@@ -1,6 +1,6 @@
 import icons from 'url:../../img/icons.svg';
 import { Fraction } from 'fractional';
-import { timeout } from '../helpers';
+import { parseHTML, timeout } from '../helpers';
 import { TIMEOUT_SEC } from '../config';
 
 // presentation logic
@@ -90,12 +90,9 @@ class RecipeView {
         }
     }
 
-    async renderOnHistoryNavigation(html) {
+    async renderOnHistoryNavigation(markup) {
         try {
-            this.#parentEl.insertAdjacentHTML(
-                'beforeend',
-                `<div class="entire__recipe hidden">${html}</div>`
-            );
+            this.#parentEl.insertAdjacentHTML('beforeend', markup);
 
             const image = this.#getImageFromRecipe(
                 this.#parentEl.querySelector('.entire__recipe')
@@ -112,12 +109,29 @@ class RecipeView {
         }
     }
 
+    isValidMarkup(markup) {
+        if (!markup) return false;
+
+        const parsedMarkup = parseHTML(markup).querySelector('.entire__recipe');
+        if (!parsedMarkup) return false;
+
+        return true;
+    }
+
+    addHiddenClassToMarkup(markup) {
+        const parsedElement =
+            parseHTML(markup).querySelector('.entire__recipe');
+        parsedElement.classList.add('hidden');
+        return parsedElement.outerHTML;
+    }
+
     pushURL(query) {
         const url = new URL(window.location);
+        url.searchParams.set('id', query);
 
-        const newUrl = `${url.protocol}//${url.host}${url.pathname}${url.hash}`;
+        const newUrl = `${url.origin}${url.search}`;
         const JSONObject = JSON.stringify({
-            html: this.#parentEl.querySelector('.entire__recipe').outerHTML,
+            markup: this.#parentEl.querySelector('.entire__recipe').outerHTML,
         });
 
         history.pushState(JSONObject, document.title, `${newUrl}`);

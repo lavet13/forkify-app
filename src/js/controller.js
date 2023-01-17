@@ -26,10 +26,13 @@ import * as Model from './model';
 // Or in other words, as soon as the publisher(addHandlerRender) publishes an event, the subscriber(controlRecipes)
 // will get called.
 
-async function controlRecipes() {
+async function controlRecipes(e) {
     // application logic
     try {
-        const id = window.location.hash.slice(1);
+        e.preventDefault();
+        if (!e.target.closest('.preview__link')) return;
+        const id = e.target.closest('.preview__link').getAttribute('href');
+        console.log(`id = ${id}`);
         if (!id) return;
 
         const { loadRecipe } = Model;
@@ -55,11 +58,11 @@ async function controlRecipes() {
 const handleHistoryNavigationOnRecipe = async function (e) {
     try {
         if (e.state) {
+            const { markup } = JSON.parse(e.state);
+            if (!this.isValidMarkup(markup)) return;
+            const hiddenMarkup = this.addHiddenClassToMarkup(markup);
             this.renderSpinner();
-
-            const { html } = JSON.parse(e.state);
-            console.log(html);
-            await this.renderOnHistoryNavigation(html);
+            await this.renderOnHistoryNavigation(hiddenMarkup);
         }
     } catch (err) {
         console.error(err);
@@ -95,11 +98,11 @@ async function controlSearchResults(e) {
 const handleHistoryNavigationOnSearch = async function (e) {
     try {
         if (e.state) {
+            const { markup } = JSON.parse(e.state);
+            if (!this.isValidMarkup(markup)) return;
+            const hiddenMarkup = this.addHiddenClassToMarkup(markup);
             this.renderSpinner();
-
-            const { html } = JSON.parse(e.state);
-            console.log(html);
-            await this.renderOnHistoryNavigation(html);
+            await this.renderOnHistoryNavigation(hiddenMarkup);
         }
     } catch (err) {
         console.error(err);
@@ -120,8 +123,8 @@ const init = function () {
 
         recipeView.addHandlerRender({
             handler: controlRecipes,
-            DOMElement: window,
-            events: ['hashchange', 'load'],
+            DOMElement: document.querySelector('.search-results'),
+            events: ['click'],
         });
         recipeView.addHandlerRender({
             handler: handleHistoryNavigationOnRecipe,

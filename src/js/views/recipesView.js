@@ -1,5 +1,5 @@
 import icons from '../../img/icons.svg';
-import { historyPushURL } from '../helpers';
+import { parseHTML } from '../helpers';
 
 class RecipesView {
     #parentEl = document.querySelector('.search-results');
@@ -72,7 +72,7 @@ class RecipesView {
                 <li class="preview">
                     <a
                         class="preview__link preview__link--active"
-                        href="#${id}"
+                        href="${id}"
                     >
                         <figure class="preview__fig">
                             <img src="${imageUrl}" alt="${title}" />
@@ -99,12 +99,9 @@ class RecipesView {
             .join('')}</ul>`;
     }
 
-    async renderOnHistoryNavigation(html) {
+    async renderOnHistoryNavigation(markup) {
         try {
-            this.#parentEl.insertAdjacentHTML(
-                'beforeend',
-                `<ul class="results hidden">${html}</ul>`
-            );
+            this.#parentEl.insertAdjacentHTML('beforeend', markup);
 
             const images = [
                 ...this.#parentEl.querySelectorAll('.preview__fig img'),
@@ -123,13 +120,28 @@ class RecipesView {
         }
     }
 
+    isValidMarkup(markup) {
+        if (!markup) return false;
+
+        const parsedMarkup = parseHTML(markup).querySelector('.results');
+        if (!parsedMarkup) return false;
+
+        return true;
+    }
+
+    addHiddenClassToMarkup(markup) {
+        const parsedElement = parseHTML(markup).querySelector('.results');
+        parsedElement.classList.add('hidden');
+        return parsedElement.outerHTML;
+    }
+
     pushURL(query) {
         const url = new URL(window.location);
         url.searchParams.set('search', query);
 
-        const newUrl = `${url.protocol}//${url.host}${url.pathname}${url.search}`;
+        const newUrl = `${url.origin}${url.search}`;
         const JSONObject = JSON.stringify({
-            html: this.#parentEl.querySelector('.results').outerHTML,
+            markup: this.#parentEl.querySelector('.results').outerHTML,
         });
 
         history.pushState(JSONObject, document.title, `${newUrl}`);
