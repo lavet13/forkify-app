@@ -88,3 +88,29 @@ Handling events is associated to the Controller. Then loading the recipe happens
 And then the Model asynchronously gets the recipe data from the API. And once that data has arrived, the controller asks for that data, receives it, sends it to the View
 which will then ultimately render the recipe on the screen. And that's it. So that's what every step of the flowchart is associated to in the MVC architecture.
 
+
+PUBLISHER-SUBSCRIBER PATTERN
+We want handle events in the controller because otherwise, we would have application logic in the view and of course we don't want that
+on the other hand we want to listen for events in the view because otherwise we would need DOM elements in the controller, and
+we would basically have presentation logic in the controller which would be wrong in our MVC implementation.
+Event listeners should be attached to DOM elements in the view, but the events should then be handled by controller functions that
+live in the controller module.
+
+PUBLISHER-SUBSCRIBER PATTERN
+We have a publisher which is soem code that knows when to react,
+and in this case, that's going to be the addHandlerRender function in the view, because it will
+contain the addEventListener method. And therefore, it will know when to react to the event.
+Now, on the other hand, we have a subscriber which is code that actually wants to react.
+So this is the code that should actually be executed when the event happens. And in this case,
+that is the controlRecipes function that we have in the controller. And publisher doesn't know
+yet that the subscriber even exists because that subscriber is in the controller that the view
+cannot access. Solution is that we can now subscribe to the publisher by passing into subscriber
+function as an argument. In practice that means as soon as the program loads, the init function
+is called which in turn immediately calls the addHandlerRender function from the view.
+As we call addHandlerRender, we pass in our controlRecipes function as an argument.
+So essentially, we subscribe controlRecipes to addHandlerRender. And so at this point, the two
+functions are basically finally connected. So now addHandlerRender listens for events using
+the addEventListener method as always. And then as soon as the event actually happens,
+the controlRecipes function will be called as the callback function of addEventListener.
+Or in other words, as soon as the publisher(addHandlerRender) publishes an event, the subscriber(controlRecipes)
+will get called.

@@ -45,10 +45,6 @@ export const getValidProperties = recipe =>
         })
     );
 
-export const historyPushURL = ({ handler, query }) => {
-    handler(query);
-};
-
 export const parseHTML = function (markup) {
     const t = document.createElement('template');
     t.innerHTML = markup;

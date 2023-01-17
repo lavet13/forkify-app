@@ -127,7 +127,8 @@ class RecipeView {
 
     pushURL(query) {
         const url = new URL(window.location);
-        url.searchParams.set('id', query);
+        const param = encodeURIComponent(query);
+        url.searchParams.set('id', param);
 
         const newUrl = `${url.origin}${url.search}`;
         const JSONObject = JSON.stringify({
