@@ -1,70 +1,20 @@
+import View from './View';
+
 import icons from 'url:../../img/icons.svg';
 import { Fraction } from 'fractional';
-import { parseHTML, timeout } from '../helpers';
+import { timeout } from '../helpers';
 import { TIMEOUT_SEC } from '../config';
 
 // presentation logic
-class RecipeView {
+class RecipeView extends View {
+    _parentEl = document.querySelector('.recipe');
+    _childEl = `entire__recipe`;
+    _paramSearch = 'id';
+    _defaultMessage = `Start by searching for a recipe or an ingredient. Have fun!`;
     #data;
-    #parentEl = document.querySelector('.recipe');
-    #defaultMessage = `Start by searching for a recipe or an ingredient. Have fun!`;
 
-    constructor() {}
-
-    renderMessage(message = this.#defaultMessage) {
-        const markup = `
-            <div class="recipe">
-                <div class="message">
-                    <div>
-                        <svg>
-                            <use href="${icons}#icon-smile"></use>
-                        </svg>
-                    </div>
-                    <p>
-                        ${message}
-                    </p>
-                </div>
-        `;
-
-        this.#parentEl.replaceChildren();
-        this.#parentEl.insertAdjacentHTML('afterbegin', markup);
-    }
-
-    renderError(message) {
-        const markup = `
-            <div class="error">
-                <div>
-                    <svg>
-                        <use href="${icons}#icon-alert-triangle"></use>
-                    </svg>
-                </div>
-                <p>${message}</p>
-            </div>
-        `;
-
-        this.#parentEl.replaceChildren();
-        this.#parentEl.insertAdjacentHTML('afterbegin', markup);
-    }
-
-    renderSpinner() {
-        const markup = `
-            <div class="spinner">
-                <svg>
-                    <use href="${icons}#icon-loader"></use>
-                </svg>
-            </div>
-        `;
-
-        this.#parentEl.replaceChildren();
-        this.#parentEl.insertAdjacentHTML('afterbegin', markup);
-    }
-
-    addHandlerRender({ handler, DOMElement, events }) {
-        if (events.length === 0) throw new Error("Events weren't specified!");
-
-        events.forEach(ev =>
-            DOMElement.addEventListener(ev, handler.bind(this))
-        );
+    constructor() {
+        super();
     }
 
     async render(recipe) {
@@ -73,10 +23,10 @@ class RecipeView {
 
             const markup = await this.#generateMarkup();
 
-            this.#parentEl.insertAdjacentHTML('beforeend', markup);
+            this._parentEl.insertAdjacentHTML('beforeend', markup);
 
             const image = this.#getImageFromRecipe(
-                this.#parentEl.querySelector('.entire__recipe')
+                this._parentEl.querySelector(`.${this._childEl}`)
             );
 
             await Promise.race([
@@ -84,7 +34,7 @@ class RecipeView {
                 timeout(TIMEOUT_SEC),
             ]);
 
-            this.#parentEl.querySelector('.spinner') && this.#clearSpinner();
+            this._parentEl.querySelector('.spinner') && this._clearSpinner();
         } catch (err) {
             throw err;
         }
@@ -92,10 +42,10 @@ class RecipeView {
 
     async renderOnHistoryNavigation(markup) {
         try {
-            this.#parentEl.insertAdjacentHTML('beforeend', markup);
+            this._parentEl.insertAdjacentHTML('beforeend', markup);
 
             const image = this.#getImageFromRecipe(
-                this.#parentEl.querySelector('.entire__recipe')
+                this._parentEl.querySelector(`.${this._childEl}`)
             );
 
             await Promise.race([
@@ -103,45 +53,18 @@ class RecipeView {
                 timeout(TIMEOUT_SEC),
             ]);
 
-            this.#parentEl.querySelector('.spinner') && this.#clearSpinner();
+            this._parentEl.querySelector('.spinner') && this._clearSpinner();
         } catch (err) {
             throw err;
         }
     }
 
-    isValidMarkup(markup) {
-        if (!markup) return false;
-
-        const parsedMarkup = parseHTML(markup).querySelector('.entire__recipe');
-        if (!parsedMarkup) return false;
-
-        return true;
-    }
-
-    addHiddenClassToMarkup(markup) {
-        const parsedElement =
-            parseHTML(markup).querySelector('.entire__recipe');
-        parsedElement.classList.add('hidden');
-        return parsedElement.outerHTML;
-    }
-
-    pushURL(query) {
-        const url = new URL(window.location);
-        const param = encodeURIComponent(query);
-        url.searchParams.set('id', param);
-
-        const newUrl = `${url.origin}${url.search}`;
-        const JSONObject = JSON.stringify({
-            markup: this.#parentEl.querySelector('.entire__recipe').outerHTML,
-        });
-
-        history.pushState(JSONObject, document.title, `${newUrl}`);
-    }
-
     #downloadImage(image) {
         return new Promise((resolve, reject) => {
             image.addEventListener('load', e => {
-                e.target.closest('.entire__recipe').classList.remove('hidden');
+                e.target
+                    .closest(`.${this._childEl}`)
+                    .classList.remove('hidden');
                 resolve();
             });
 
@@ -153,14 +76,6 @@ class RecipeView {
 
     #getImageFromRecipe(recipe) {
         return recipe.querySelector('.recipe__img');
-    }
-
-    #clear(element) {
-        this.#parentEl.removeChild(element);
-    }
-
-    #clearSpinner() {
-        this.#clear(this.#parentEl.querySelector('.spinner'));
     }
 
     async #generateMarkup() {
@@ -176,7 +91,7 @@ class RecipeView {
         } = this.#data;
 
         return `
-            <div class="entire__recipe hidden">
+            <div class="${this._childEl} hidden">
                 <figure class="recipe__fig">
                     <img src="${imageUrl}" class="recipe__img" alt="${title}">
                     <h1 class="recipe__title">

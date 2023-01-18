@@ -1,39 +1,15 @@
-import icons from '../../img/icons.svg';
-import { parseHTML } from '../helpers';
+import View from './View';
 
-class RecipesView {
-    #parentEl = document.querySelector('.search-results');
+import icons from '../../img/icons.svg';
+
+class RecipesView extends View {
+    _parentEl = document.querySelector('.search-results');
+    _childEl = `results`;
+    _paramSearch = 'search';
     #data;
 
-    constructor() {}
-
-    renderSpinner() {
-        const markup = `
-            <div class="spinner">
-                <svg>
-                    <use href="${icons}#icon-loader"></use>
-                </svg>
-            </div>
-        `;
-
-        this.#parentEl.replaceChildren();
-        this.#parentEl.insertAdjacentHTML('afterbegin', markup);
-    }
-
-    renderError(message) {
-        const markup = `
-            <div class="error">
-                <div>
-                    <svg>
-                        <use href="${icons}#icon-alert-triangle"></use>
-                    </svg>
-                </div>
-                <p>${message}</p>
-            </div>
-        `;
-
-        this.#parentEl.replaceChildren();
-        this.#parentEl.insertAdjacentHTML('afterbegin', markup);
+    constructor() {
+        super();
     }
 
     async render(data) {
@@ -41,19 +17,21 @@ class RecipesView {
             this.#data = data;
 
             const markup = this.#generateMarkup();
-            this.#parentEl.insertAdjacentHTML('beforeend', markup);
+            this._parentEl.insertAdjacentHTML('beforeend', markup);
 
             const images = [
-                ...this.#parentEl.querySelectorAll('.preview__fig img'),
+                ...this._parentEl.querySelectorAll('.preview__fig img'),
             ];
 
             const downloadedImages = await Promise.all(
                 this.#downloadImages(images)
             );
             // console.log(downloadedImages);
-            this.#parentEl.querySelector('.results').classList.remove('hidden');
+            this._parentEl
+                .querySelector(`.${this._childEl}`)
+                .classList.remove('hidden');
 
-            this.#parentEl.querySelector('.spinner') && this.#clearSpinner();
+            this._parentEl.querySelector('.spinner') && this._clearSpinner();
 
             if (downloadedImages.length === 0)
                 throw new Error(`We couldn't find any recipes`);
@@ -65,7 +43,7 @@ class RecipesView {
     #generateMarkup() {
         const { recipes, results } = this.#data;
 
-        return `<ul class="results hidden">${recipes
+        return `<ul class="${this._childEl} hidden">${recipes
             .map(
                 ({ id, imageUrl, publisher, title }) =>
                     `
@@ -101,51 +79,25 @@ class RecipesView {
 
     async renderOnHistoryNavigation(markup) {
         try {
-            this.#parentEl.insertAdjacentHTML('beforeend', markup);
+            this._parentEl.insertAdjacentHTML('beforeend', markup);
 
             const images = [
-                ...this.#parentEl.querySelectorAll('.preview__fig img'),
+                ...this._parentEl.querySelectorAll('.preview__fig img'),
             ];
             const downloadedImages = await Promise.all(
                 this.#downloadImages(images)
             );
 
-            this.#parentEl.querySelector('.results').classList.remove('hidden');
-            this.#parentEl.querySelector('.spinner') && this.#clearSpinner();
+            this._parentEl
+                .querySelector(`.${this._childEl}`)
+                .classList.remove('hidden');
+            this._parentEl.querySelector('.spinner') && this._clearSpinner();
 
             if (downloadedImages.length === 0)
                 throw new Error(`We couldn't find any recipes`);
         } catch (err) {
             throw err;
         }
-    }
-
-    isValidMarkup(markup) {
-        if (!markup) return false;
-
-        const parsedMarkup = parseHTML(markup).querySelector('.results');
-        if (!parsedMarkup) return false;
-
-        return true;
-    }
-
-    addHiddenClassToMarkup(markup) {
-        const parsedElement = parseHTML(markup).querySelector('.results');
-        parsedElement.classList.add('hidden');
-        return parsedElement.outerHTML;
-    }
-
-    pushURL(query) {
-        const url = new URL(window.location);
-        const param = encodeURIComponent(query);
-        url.searchParams.set('search', param);
-
-        const newUrl = `${url.origin}${url.search}`;
-        const JSONObject = JSON.stringify({
-            markup: this.#parentEl.querySelector('.results').outerHTML,
-        });
-
-        history.pushState(JSONObject, document.title, `${newUrl}`);
     }
 
     #downloadImages(images) {
@@ -161,22 +113,6 @@ class RecipesView {
                     });
                 })
         );
-    }
-
-    #clearSpinner() {
-        this.#clear(this.#parentEl.querySelector('.spinner'));
-    }
-
-    #clear(element) {
-        this.#parentEl.removeChild(element);
-    }
-
-    addHandlerRender({ handler, DOMElement, events }) {
-        if (events.length === 0) return new Error("Events weren't specified");
-
-        events.forEach(ev => {
-            DOMElement.addEventListener(ev, handler.bind(this));
-        });
     }
 }
 

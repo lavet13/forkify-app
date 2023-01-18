@@ -1,7 +1,7 @@
 import { getValidProperties } from './helpers';
 import * as Model from './model';
 
-export async function renderRecipe(id) {
+export const renderRecipe = async function (id) {
     try {
         if (!id) return;
 
@@ -21,17 +21,22 @@ export async function renderRecipe(id) {
     } catch (err) {
         throw err;
     }
-}
+};
 
-export async function renderRecipeList(query) {
+export const renderRecipeList = async function (query) {
     try {
         if (!query) return;
 
         const { loadSearchResults } = Model;
-        const recipes = await loadSearchResults(query);
+        await loadSearchResults(query);
         this.renderSpinner();
 
-        const { recipes: recipesArray, results } = recipes;
+        const {
+            state: {
+                search: { recipes: recipesArray, results },
+            },
+        } = Model;
+
         const validRecipes = recipesArray.map(recipe =>
             getValidProperties(recipe)
         );
@@ -41,7 +46,13 @@ export async function renderRecipeList(query) {
     } catch (err) {
         throw err;
     }
-}
+};
+
+export const alreadySearched = function (param, query) {
+    const { searchParams } = new URL(window.location);
+    const storedQuery = searchParams.get(param);
+    return query === storedQuery ? 1 : 0;
+};
 
 export const historyPushURL = ({ handler, query }) => {
     handler(query);

@@ -3,10 +3,14 @@ import 'regenerator-runtime/runtime'; // polyfilling async/await
 
 import recipeView from './views/recipeView';
 import recipesView from './views/recipesView';
-import { renderRecipe, renderRecipeList } from './controllerHelpers';
-import { historyPushURL } from './controllerHelpers';
+import {
+    renderRecipe,
+    renderRecipeList,
+    historyPushURL,
+    alreadySearched,
+} from './controllerHelpers';
 
-async function controlRecipes(e) {
+const controlRecipes = async function (e) {
     // application logic
     try {
         e.preventDefault();
@@ -14,19 +18,22 @@ async function controlRecipes(e) {
         if (!e.target.closest('.preview__link')) return;
         const id = e.target.closest('.preview__link').getAttribute('href');
 
+        if (alreadySearched('id', id)) return;
+
         await renderRecipe.call(this, id);
 
         historyPushURL({ query: id, handler: this.pushURL.bind(this) });
     } catch (err) {
         this.renderError(err.message);
     }
-}
+};
 
-async function controlSearchResults(e) {
+const controlSearchResults = async function (e) {
     try {
         e.preventDefault();
 
         const { result } = Object.fromEntries(new FormData(e.target).entries());
+        if (alreadySearched('search', result)) return;
 
         await renderRecipeList.call(this, result);
 
@@ -35,8 +42,9 @@ async function controlSearchResults(e) {
         console.error(err);
         err.message && this.renderError(err.message);
     }
-}
+};
 
+//////////////////////////////////////////////////////////////////////
 // HISTORY API
 const handleHistoryNavigationOnRecipe = async function (e) {
     try {
@@ -68,27 +76,24 @@ const handleHistoryNavigationOnSearch = async function (e) {
     }
 };
 
-async function loadDataBasedOnURL() {
+const loadDataBasedOnURL = async function () {
     try {
         const url = new URL(window.location);
         console.log(url.searchParams);
 
         for (const [key, value] of url.searchParams) {
             if (key === 'search') {
-                await renderRecipeList.call(
-                    recipesView,
-                    decodeURIComponent(value)
-                );
+                renderRecipeList.call(recipesView, decodeURIComponent(value));
             }
 
             if (key === 'id') {
-                await renderRecipe.call(recipeView, decodeURIComponent(value));
+                renderRecipe.call(recipeView, decodeURIComponent(value));
             }
         }
     } catch (err) {
         console.error(err);
     }
-}
+};
 
 const init = function () {
     try {
@@ -99,24 +104,24 @@ const init = function () {
             DOMElement: document.querySelector('.search-results'),
             events: ['click'],
         });
-        recipeView.addHandlerRender({
-            handler: handleHistoryNavigationOnRecipe,
-            DOMElement: window,
-            events: ['popstate'],
-        });
         ///////////////////////////////////////////////
         recipesView.addHandlerRender({
             handler: controlSearchResults,
             DOMElement: document.querySelector('.search'),
             events: ['submit'],
         });
+        ////////////////////////////////////////////////
+        // Produce data based on url + HISTORY API
+        recipeView.addHandlerRender({
+            handler: handleHistoryNavigationOnRecipe,
+            DOMElement: window,
+            events: ['popstate'],
+        });
         recipesView.addHandlerRender({
             handler: handleHistoryNavigationOnSearch,
             DOMElement: window,
             events: ['popstate'],
         });
-        ////////////////////////////////////////////////
-        // Produce data based on url
         window.addEventListener('load', loadDataBasedOnURL);
     } catch (err) {
         console.error(err);

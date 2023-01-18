@@ -9,11 +9,11 @@ export const state = {
 };
 
 // business logic
-export async function loadRecipe(id) {
+export const loadRecipe = async function (id) {
     try {
         const {
             data: { recipe },
-        } = await getJSON(`${API_URL}/${id}`);
+        } = await getJSON(`${API_URL}${id}`);
 
         state.recipe = recipe;
     } catch (err) {
@@ -21,17 +21,17 @@ export async function loadRecipe(id) {
             `We could not find that recipe. Please try another one!`
         );
     }
-}
+};
 
-export async function loadSearchResults(query) {
+export const loadSearchResults = async function (query) {
     try {
         const {
             results,
             data: { recipes },
         } = await getJSON(`${API_URL}?search=${query}&key=${API_KEY}`);
 
-        return { results, recipes };
+        state.search = { results, recipes };
     } catch (err) {
         throw err;
     }
-}
+};
