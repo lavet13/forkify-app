@@ -63,25 +63,10 @@ export default class View {
         return true;
     }
 
-    addHiddenClassToMarkup(markup) {
-        const parsedElement = parseHTML(markup).querySelector(
-            `.${this._childEl}`
-        );
+    static addHiddenClassToMarkup(markup, childEl) {
+        const parsedElement = parseHTML(markup).querySelector(`.${childEl}`);
         parsedElement.classList.add('hidden');
         return parsedElement.outerHTML;
-    }
-
-    pushURL(query) {
-        const url = new URL(window.location);
-        const param = encodeURIComponent(query);
-        url.searchParams.set(this._paramSearch, param);
-
-        const newUrl = `${url.origin}/${url.search}`;
-        const JSONObject = JSON.stringify({
-            markup: this._parentEl.querySelector(`.${this._childEl}`).outerHTML,
-        });
-
-        history.pushState(JSONObject, document.title, `${newUrl}`);
     }
 
     _clear(element) {

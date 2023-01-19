@@ -54,6 +54,25 @@ export const alreadySearched = function (param, query) {
     return query === storedQuery ? 1 : 0;
 };
 
-export const historyPushURL = ({ handler, query }) => {
-    handler(query);
+export const pushURL = function (query, ...others) {
+    const otherContent = others.map(other => {
+        return {
+            _childEl: other._childEl,
+            markup: other._parentEl.querySelector(`.${other._childEl}`)
+                ?.outerHTML,
+        };
+    });
+
+    const url = new URL(window.location);
+    const param = encodeURIComponent(query);
+    url.searchParams.set(this._paramSearch, param);
+
+    const newUrl = `${url.origin}/${url.search}`;
+    const JSONObject = JSON.stringify({
+        markup: this._parentEl.querySelector(`.${this._childEl}`).outerHTML,
+        _childEl: this._childEl,
+        otherMarkup: otherContent,
+    });
+
+    history.pushState(JSONObject, document.title, `${newUrl}`);
 };

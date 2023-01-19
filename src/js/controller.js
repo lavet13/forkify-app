@@ -1,5 +1,6 @@
 import 'regenerator-runtime/runtime'; // polyfilling async/await
 
+import View from './views/View';
 import recipeView from './views/recipeView';
 import recipesView from './views/recipesView';
 import searchView from './views/searchView';
@@ -7,7 +8,7 @@ import clickRecipeView from './views/clickRecipeView';
 import {
     renderRecipe,
     renderRecipeList,
-    historyPushURL,
+    pushURL,
     alreadySearched,
 } from './controllerHelpers';
 
@@ -19,7 +20,7 @@ const controlRecipes = async function (e) {
 
         await renderRecipe.call(recipeView, query);
 
-        historyPushURL({ query, handler: recipeView.pushURL.bind(recipeView) });
+        pushURL.call(recipeView, query, recipesView);
     } catch (err) {
         console.error(err);
         recipeView.renderError(err.message);
@@ -33,10 +34,7 @@ const controlSearchResults = async function () {
 
         await renderRecipeList.call(recipesView, query);
 
-        historyPushURL({
-            query,
-            handler: recipesView.pushURL.bind(recipesView),
-        });
+        pushURL.call(recipesView, query, recipeView);
     } catch (err) {
         console.error(err);
         err.message && recipesView.renderError(err.message);
@@ -45,33 +43,45 @@ const controlSearchResults = async function () {
 
 //////////////////////////////////////////////////////////////////////
 // HISTORY API
-const handleHistoryNavigationOnRecipe = async function (e) {
-    try {
-        if (e.state) {
-            const { markup } = JSON.parse(e.state);
-            if (!this.isValidMarkup(markup)) return;
-            const hiddenMarkup = this.addHiddenClassToMarkup(markup);
-            this.renderSpinner();
-            await this.renderOnHistoryNavigation(hiddenMarkup);
-        }
-    } catch (err) {
-        console.error(err);
-        err.message && this.renderError(err.message);
-    }
-};
+// const handleHistoryNavigationOnRecipe = async function (e) {
+//     try {
+//         if (e.state) {
+//             const { markup } = JSON.parse(e.state);
+//             if (!this.isValidMarkup(markup)) return;
+//             const hiddenMarkup = this.addHiddenClassToMarkup(markup);
+//             this.renderSpinner();
+//             await this.renderOnHistoryNavigation(hiddenMarkup);
+//         }
+//     } catch (err) {
+//         console.error(err);
+//         err.message && this.renderError(err.message);
+//     }
+// };
 
-const handleHistoryNavigationOnSearch = async function (e) {
+// const handleHistoryNavigationOnSearch = async function (e) {
+//     try {
+//         if (e.state) {
+//             const { markup } = JSON.parse(e.state);
+//             if (!this.isValidMarkup(markup)) return;
+//             const hiddenMarkup = this.addHiddenClassToMarkup(markup);
+//             this.renderSpinner();
+//             await this.renderOnHistoryNavigation(hiddenMarkup);
+//         }
+//     } catch (err) {
+//         console.error(err);
+//         err.message && this.renderError(err.message);
+//     }
+// };
+
+const handleHistoryNavigation = async function (e) {
     try {
         if (e.state) {
-            const { markup } = JSON.parse(e.state);
-            if (!this.isValidMarkup(markup)) return;
-            const hiddenMarkup = this.addHiddenClassToMarkup(markup);
-            this.renderSpinner();
-            await this.renderOnHistoryNavigation(hiddenMarkup);
+            const { markup, _childEl, otherMarkup } = JSON.parse(e.state);
+            const hiddenMarkup = View.addHiddenClassToMarkup(markup, _childEl);
+            console.log(markup, otherMarkup);
         }
     } catch (err) {
         console.error(err);
-        err.message && this.renderError(err.message);
     }
 };
 
@@ -102,9 +112,7 @@ const init = function () {
         searchView.addHandlerRender(controlSearchResults);
         ////////////////////////////////////////////////
         // Produce data based on url + HISTORY API
-        recipesView.addHandlerRender(handleHistoryNavigationOnSearch);
-        recipeView.addHandlerRender(handleHistoryNavigationOnRecipe);
-
+        window.addEventListener('popstate', handleHistoryNavigation);
         window.addEventListener('load', loadDataBasedOnURL);
     } catch (err) {
         console.error(err);
