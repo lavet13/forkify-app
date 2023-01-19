@@ -52,14 +52,6 @@ export default class View {
         this._parentEl.insertAdjacentHTML('afterbegin', markup);
     }
 
-    addHandlerRender({ handler, DOMElement, events }) {
-        if (events.length === 0) throw new Error("Events weren't specified!");
-
-        events.forEach(ev =>
-            DOMElement.addEventListener(ev, handler.bind(this))
-        );
-    }
-
     isValidMarkup(markup) {
         if (!markup) return false;
 

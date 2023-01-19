@@ -1,8 +1,9 @@
-import 'core-js/stable'; //polyfilling everything else
 import 'regenerator-runtime/runtime'; // polyfilling async/await
 
 import recipeView from './views/recipeView';
 import recipesView from './views/recipesView';
+import searchView from './views/searchView';
+import clickRecipeView from './views/clickRecipeView';
 import {
     renderRecipe,
     renderRecipeList,
@@ -13,34 +14,32 @@ import {
 const controlRecipes = async function (e) {
     // application logic
     try {
-        e.preventDefault();
+        const query = clickRecipeView.getQuery(e.target);
+        if (alreadySearched('id', query)) return;
 
-        if (!e.target.closest('.preview__link')) return;
-        const id = e.target.closest('.preview__link').getAttribute('href');
+        await renderRecipe.call(recipeView, query);
 
-        if (alreadySearched('id', id)) return;
-
-        await renderRecipe.call(this, id);
-
-        historyPushURL({ query: id, handler: this.pushURL.bind(this) });
+        historyPushURL({ query, handler: recipeView.pushURL.bind(recipeView) });
     } catch (err) {
-        this.renderError(err.message);
+        console.error(err);
+        recipeView.renderError(err.message);
     }
 };
 
-const controlSearchResults = async function (e) {
+const controlSearchResults = async function () {
     try {
-        e.preventDefault();
+        const query = this.getQuery();
+        if (alreadySearched('search', query)) return;
 
-        const { result } = Object.fromEntries(new FormData(e.target).entries());
-        if (alreadySearched('search', result)) return;
+        await renderRecipeList.call(recipesView, query);
 
-        await renderRecipeList.call(this, result);
-
-        historyPushURL({ query: result, handler: this.pushURL.bind(this) });
+        historyPushURL({
+            query,
+            handler: recipesView.pushURL.bind(recipesView),
+        });
     } catch (err) {
         console.error(err);
-        err.message && this.renderError(err.message);
+        err.message && recipesView.renderError(err.message);
     }
 };
 
@@ -99,29 +98,13 @@ const init = function () {
     try {
         recipeView.renderMessage();
 
-        recipeView.addHandlerRender({
-            handler: controlRecipes,
-            DOMElement: document.querySelector('.search-results'),
-            events: ['click'],
-        });
-        ///////////////////////////////////////////////
-        recipesView.addHandlerRender({
-            handler: controlSearchResults,
-            DOMElement: document.querySelector('.search'),
-            events: ['submit'],
-        });
+        clickRecipeView.addHandlerRender(controlRecipes);
+        searchView.addHandlerRender(controlSearchResults);
         ////////////////////////////////////////////////
         // Produce data based on url + HISTORY API
-        recipeView.addHandlerRender({
-            handler: handleHistoryNavigationOnRecipe,
-            DOMElement: window,
-            events: ['popstate'],
-        });
-        recipesView.addHandlerRender({
-            handler: handleHistoryNavigationOnSearch,
-            DOMElement: window,
-            events: ['popstate'],
-        });
+        recipesView.addHandlerRender(handleHistoryNavigationOnSearch);
+        recipeView.addHandlerRender(handleHistoryNavigationOnRecipe);
+
         window.addEventListener('load', loadDataBasedOnURL);
     } catch (err) {
         console.error(err);

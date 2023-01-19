@@ -17,6 +17,10 @@ class RecipeView extends View {
         super();
     }
 
+    addHandlerRender(handler) {
+        window.addEventListener('popstate', handler.bind(this));
+    }
+
     async render(recipe) {
         try {
             this.#data = recipe;

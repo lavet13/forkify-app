@@ -1,19 +1,22 @@
 class SearchView {
-    #parentEl = document.querySelector('.search');
+    _parentEl = document.querySelector('.search');
 
     constructor() {}
 
     getQuery() {
         const { result } = Object.fromEntries(
-            new FormData(this.#parentEl).entries()
+            new FormData(this._parentEl).entries()
         );
+
         return result;
     }
 
-    addHandlerSearch(handler) {
-        this.#parentEl.addEventListener('submit', function (e) {
+    addHandlerRender(handler) {
+        this._parentEl.addEventListener('submit', e => {
             e.preventDefault();
-            handler.call(this, e);
+            handler.call(this);
         });
     }
 }
+
+export default new SearchView();
