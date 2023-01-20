@@ -8,8 +8,10 @@
     list-style: none;
     margin-bottom: 2rem;
     transition: all 0.2s;
+    height: 100%;
 
     &.hidden {
+        height: 0;
         visibility: hidden;
         opacity: 0;
 

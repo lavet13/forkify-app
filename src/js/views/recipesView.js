@@ -6,6 +6,7 @@ class RecipesView extends View {
     _parentEl = document.querySelector('.search-results');
     _childEl = `results`;
     _paramSearch = 'search';
+    _errorMessage = `No recipes found for your query! Please try again 💀`;
     #data;
 
     constructor() {
@@ -19,6 +20,9 @@ class RecipesView extends View {
     async render(data) {
         try {
             this.#data = data;
+            const { recipes } = this.#data;
+            if (Array.isArray(recipes) && recipes.length === 0)
+                throw new Error(this._errorMessage);
 
             const markup = this.#generateMarkup();
             this._parentEl.insertAdjacentHTML('beforeend', markup);
@@ -27,18 +31,13 @@ class RecipesView extends View {
                 ...this._parentEl.querySelectorAll('.preview__fig img'),
             ];
 
-            const downloadedImages = await Promise.all(
-                this.#downloadImages(images)
-            );
-            // console.log(downloadedImages);
+            await Promise.all(this.#downloadImages(images));
+
             this._parentEl
                 .querySelector(`.${this._childEl}`)
                 .classList.remove('hidden');
 
             this._parentEl.querySelector('.spinner') && this._clearSpinner();
-
-            if (downloadedImages.length === 0)
-                throw new Error(`We couldn't find any recipes`);
         } catch (err) {
             throw err;
         }
@@ -97,8 +96,11 @@ class RecipesView extends View {
                 .classList.remove('hidden');
             this._parentEl.querySelector('.spinner') && this._clearSpinner();
 
-            if (downloadedImages.length === 0)
-                throw new Error(`We couldn't find any recipes`);
+            if (
+                Array.isArray(downloadedImages) &&
+                downloadedImages.length === 0
+            )
+                throw new Error(this._errorMessage);
         } catch (err) {
             throw err;
         }

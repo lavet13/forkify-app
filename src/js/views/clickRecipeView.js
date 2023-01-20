@@ -1,5 +1,6 @@
 class ClickRecipeView {
     _parentEl = document.querySelector('.search-results');
+
     constructor() {}
 
     getQuery(target) {

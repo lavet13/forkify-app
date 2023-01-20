@@ -23,8 +23,8 @@ const controlRecipes = async function (e) {
 
         pushURL.call(recipeView, query, recipesView);
     } catch (err) {
-        console.error(err);
-        recipeView.renderError(err.message);
+        const { err: error, view } = err;
+        error.message && view.renderError(error.message);
     }
 };
 
@@ -37,8 +37,8 @@ const controlSearchResults = async function () {
 
         pushURL.call(recipesView, query, recipeView);
     } catch (err) {
-        console.error(err);
-        err.message && recipesView.renderError(err.message);
+        const { err: error, view } = err;
+        error.message && view.renderError(error.message);
     }
 };
 
@@ -67,10 +67,10 @@ const handleHistoryNavigation = async function (e) {
             );
 
             views.forEach(([view]) => view.renderSpinner());
-            views.forEach(async ([view, markup]) => {
-                console.log(markup);
-                await view.renderOnHistoryNavigation(markup.outerHTML);
-            });
+            views.forEach(
+                async ([view, markup]) =>
+                    await view.renderOnHistoryNavigation(markup.outerHTML)
+            );
         }
     } catch (err) {
         console.error(err);
