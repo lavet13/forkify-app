@@ -1,4 +1,6 @@
-import { getValidProperties } from './helpers';
+import recipeView from './views/recipeView';
+import recipesView from './views/recipesView';
+import { getValidProperties, parseHTML } from './helpers';
 import * as Model from './model';
 
 export const renderRecipe = async function (id) {
@@ -19,7 +21,7 @@ export const renderRecipe = async function (id) {
 
         await this.render(validRecipe);
     } catch (err) {
-        throw err;
+        throw { err, view: this };
     }
 };
 
@@ -44,7 +46,7 @@ export const renderRecipeList = async function (query) {
 
         await this.render(currentRecipes);
     } catch (err) {
-        throw err;
+        throw { err, view: this };
     }
 };
 
@@ -75,4 +77,22 @@ export const pushURL = function (query, ...others) {
     });
 
     history.pushState(JSONObject, document.title, `${newUrl}`);
+};
+
+export const getViews = function ({ markup, _childEl }, otherMarkup) {
+    const entireMarkup = new Map(
+        Array.from(otherMarkup)
+            .filter(([_, value]) => value)
+            .map(([key, value]) => [
+                key,
+                parseHTML(value).querySelector(`.${key}`),
+            ])
+    );
+
+    entireMarkup.set(_childEl, parseHTML(markup).querySelector(`.${_childEl}`));
+
+    return Array.from(entireMarkup, ([key, value]) => {
+        if (recipeView.isOwner(key)) return [recipeView, value];
+        if (recipesView.isOwner(key)) return [recipesView, value];
+    });
 };

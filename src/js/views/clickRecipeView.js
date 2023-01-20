@@ -13,7 +13,7 @@ class ClickRecipeView {
         this._parentEl.addEventListener('click', e => {
             e.preventDefault();
 
-            handler.call(this, e);
+            if (e.target.closest('.preview__link')) handler.call(this, e);
         });
     }
 }

@@ -52,21 +52,16 @@ export default class View {
         this._parentEl.insertAdjacentHTML('afterbegin', markup);
     }
 
-    isValidMarkup(markup) {
-        if (!markup) return false;
-
-        const parsedMarkup = parseHTML(markup).querySelector(
-            `.${this._childEl}`
-        );
-        if (!parsedMarkup) return false;
-
-        return true;
-    }
-
     static addHiddenClassToMarkup(markup, childEl) {
+        if (!markup) return;
+
         const parsedElement = parseHTML(markup).querySelector(`.${childEl}`);
         parsedElement.classList.add('hidden');
         return parsedElement.outerHTML;
+    }
+
+    isOwner(key) {
+        return key === this._childEl;
     }
 
     _clear(element) {

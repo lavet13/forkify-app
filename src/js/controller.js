@@ -9,6 +9,7 @@ import {
     renderRecipe,
     renderRecipeList,
     pushURL,
+    getViews,
     alreadySearched,
 } from './controllerHelpers';
 
@@ -29,7 +30,7 @@ const controlRecipes = async function (e) {
 
 const controlSearchResults = async function () {
     try {
-        const query = this.getQuery();
+        const query = searchView.getQuery();
         if (alreadySearched('search', query)) return;
 
         await renderRecipeList.call(recipesView, query);
@@ -43,42 +44,33 @@ const controlSearchResults = async function () {
 
 //////////////////////////////////////////////////////////////////////
 // HISTORY API
-// const handleHistoryNavigationOnRecipe = async function (e) {
-//     try {
-//         if (e.state) {
-//             const { markup } = JSON.parse(e.state);
-//             if (!this.isValidMarkup(markup)) return;
-//             const hiddenMarkup = this.addHiddenClassToMarkup(markup);
-//             this.renderSpinner();
-//             await this.renderOnHistoryNavigation(hiddenMarkup);
-//         }
-//     } catch (err) {
-//         console.error(err);
-//         err.message && this.renderError(err.message);
-//     }
-// };
-
-// const handleHistoryNavigationOnSearch = async function (e) {
-//     try {
-//         if (e.state) {
-//             const { markup } = JSON.parse(e.state);
-//             if (!this.isValidMarkup(markup)) return;
-//             const hiddenMarkup = this.addHiddenClassToMarkup(markup);
-//             this.renderSpinner();
-//             await this.renderOnHistoryNavigation(hiddenMarkup);
-//         }
-//     } catch (err) {
-//         console.error(err);
-//         err.message && this.renderError(err.message);
-//     }
-// };
 
 const handleHistoryNavigation = async function (e) {
     try {
         if (e.state) {
             const { markup, _childEl, otherMarkup } = JSON.parse(e.state);
+
             const hiddenMarkup = View.addHiddenClassToMarkup(markup, _childEl);
-            console.log(markup, otherMarkup);
+            const othersHiddenMarkup = otherMarkup.reduce(
+                (acc, { _childEl, markup }) => {
+                    return acc.set(
+                        _childEl,
+                        View.addHiddenClassToMarkup(markup, _childEl)
+                    );
+                },
+                new Map([])
+            );
+
+            const views = getViews(
+                { markup: hiddenMarkup, _childEl },
+                othersHiddenMarkup
+            );
+
+            views.forEach(([view]) => view.renderSpinner());
+            views.forEach(async ([view, markup]) => {
+                console.log(markup);
+                await view.renderOnHistoryNavigation(markup.outerHTML);
+            });
         }
     } catch (err) {
         console.error(err);
@@ -92,15 +84,19 @@ const loadDataBasedOnURL = async function () {
 
         for (const [key, value] of url.searchParams) {
             if (key === 'search') {
-                renderRecipeList.call(recipesView, decodeURIComponent(value));
+                await renderRecipeList.call(
+                    recipesView,
+                    decodeURIComponent(value)
+                );
             }
 
             if (key === 'id') {
-                renderRecipe.call(recipeView, decodeURIComponent(value));
+                await renderRecipe.call(recipeView, decodeURIComponent(value));
             }
         }
     } catch (err) {
-        console.error(err);
+        const { err: error, view } = err;
+        error.message && view.renderError(error.message);
     }
 };
 
