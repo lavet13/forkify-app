@@ -7,7 +7,7 @@ class ClickRecipeView {
         const link = target.closest('.preview__link');
         if (!link) return;
 
-        return link.getAttribute('href');
+        return link.getAttribute('href').split('=')[1];
     }
 
     addHandlerRender(handler) {

@@ -1,11 +1,13 @@
 import View from './View';
 
 import icons from '../../img/icons.svg';
+import { timeout } from '../helpers';
+import { TIMEOUT_SEC } from '../config';
 
 class RecipesView extends View {
     _parentEl = document.querySelector('.search-results');
     _childEl = `results`;
-    _paramSearch = 'search';
+    _paramSearch = ['search', 'page'];
     _errorMessage = `No recipes found for your query! Please try again 💀`;
     #data;
 
@@ -31,7 +33,10 @@ class RecipesView extends View {
                 ...this._parentEl.querySelectorAll('.preview__fig img'),
             ];
 
-            await Promise.all(this.#downloadImages(images));
+            await Promise.race([
+                Promise.all(this.#downloadImages(images)),
+                timeout(TIMEOUT_SEC),
+            ]);
 
             this._parentEl
                 .querySelector(`.${this._childEl}`)
@@ -44,7 +49,7 @@ class RecipesView extends View {
     }
 
     #generateMarkup() {
-        const { recipes, results } = this.#data;
+        const { recipes, resultsCount } = this.#data;
 
         return `<ul class="${this._childEl} hidden">${recipes
             .map(
@@ -53,7 +58,7 @@ class RecipesView extends View {
                 <li class="preview">
                     <a
                         class="preview__link preview__link--active"
-                        href="${id}"
+                        href="?id=${id}"
                     >
                         <figure class="preview__fig">
                             <img src="${imageUrl}" alt="${title}" />
@@ -87,9 +92,10 @@ class RecipesView extends View {
             const images = [
                 ...this._parentEl.querySelectorAll('.preview__fig img'),
             ];
-            const downloadedImages = await Promise.all(
-                this.#downloadImages(images)
-            );
+            const downloadedImages = await Promise.race([
+                Promise.all(this.#downloadImages(images)),
+                timeout(TIMEOUT_SEC),
+            ]);
 
             this._parentEl
                 .querySelector(`.${this._childEl}`)

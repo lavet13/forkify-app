@@ -1,10 +1,14 @@
-import { API_URL } from './config';
-import { API_KEY } from './config';
+import { API_URL, API_KEY, RES_PER_PAGE } from './config';
 import { getJSON } from './helpers';
 
 export const state = {
     recipe: {},
-    search: {},
+    search: {
+        query: '',
+        resultsCount: '',
+        results: [],
+        resultsPerPage: RES_PER_PAGE,
+    },
     bookmarks: [],
 };
 
@@ -30,8 +34,16 @@ export const loadSearchResults = async function (query) {
             data: { recipes },
         } = await getJSON(`${API_URL}?search=${query}&key=${API_KEY}`);
 
-        state.search = { results, recipes };
+        state.search.results = recipes;
+        state.search.resultsCount = results;
     } catch (err) {
         throw err;
     }
+};
+
+export const getSearchResultsPage = function (page = 1) {
+    const start = (page - 1) * state.search.resultsPerPage;
+    const end = page * state.search.resultsPerPage;
+
+    return state.search.results.slice(start, end);
 };

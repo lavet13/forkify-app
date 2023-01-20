@@ -83,6 +83,9 @@ const loadDataBasedOnURL = async function () {
         console.log(url.searchParams);
 
         for (const [key, value] of url.searchParams) {
+            if (key === 'page') {
+            }
+
             if (key === 'search') {
                 await renderRecipeList.call(
                     recipesView,

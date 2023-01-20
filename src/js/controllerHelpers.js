@@ -35,14 +35,17 @@ export const renderRecipeList = async function (query) {
 
         const {
             state: {
-                search: { recipes: recipesArray, results },
+                search: { results: recipesArray, resultsCount },
             },
+            getSearchResultsPage,
         } = Model;
 
         const validRecipes = recipesArray.map(recipe =>
             getValidProperties(recipe)
         );
-        const currentRecipes = { results, recipes: validRecipes };
+
+        const currentRecipes = { resultsCount, recipes: validRecipes };
+        const recipePerPage = getSearchResultsPage();
 
         await this.render(currentRecipes);
     } catch (err) {
