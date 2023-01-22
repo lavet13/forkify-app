@@ -5,8 +5,6 @@ import * as Model from './model';
 
 export const renderRecipe = async function (id) {
     try {
-        if (!id) return;
-
         const { loadRecipe } = Model;
         await loadRecipe(id);
 
@@ -27,8 +25,6 @@ export const renderRecipe = async function (id) {
 
 export const renderRecipeList = async function (query, page = 1) {
     try {
-        if (!query) return;
-
         const { loadSearchResults } = Model;
         await loadSearchResults(query);
         this.renderSpinner();
@@ -50,6 +46,8 @@ export const renderRecipeList = async function (query, page = 1) {
         };
 
         await this.render(recipePerPage);
+
+        return recipePerPage;
     } catch (err) {
         console.error(err);
         throw { err, view: this };
@@ -58,6 +56,7 @@ export const renderRecipeList = async function (query, page = 1) {
 
 export const renderRecipePagination = function (pageNumber) {
     try {
+        this.renderSpinner();
         this.render(pageNumber);
     } catch (err) {
         throw { err, view: this };

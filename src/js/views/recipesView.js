@@ -83,8 +83,6 @@ class RecipesView extends View {
             `
             )
             .join('')}</ul>
-                <div class="pagination">
-                </div>
             `;
     }
 

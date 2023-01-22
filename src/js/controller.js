@@ -23,9 +23,11 @@ const controlRecipes = async function (e) {
         const query = clickRecipeView.getQuery(e.target);
         if (isAlreadySearched(recipeView.getParamSearch(), query)) return;
 
+        if (!query) return;
+
         await renderRecipe.call(recipeView, query);
 
-        pushURL.call(recipeView, query, recipesView);
+        pushURL.call(recipeView, query, recipesView, paginationView);
     } catch (err) {
         const { err: error, view } = err;
         error.message && view.renderError(error.message);
@@ -37,10 +39,18 @@ const controlSearchResults = async function () {
         const query = searchView.getQuery();
         if (isAlreadySearched(recipesView.getParamSearch(), query)) return;
 
-        await renderRecipeList.call(recipesView, query);
-        await renderRecipePagination.call(paginationView, 1);
+        if (!query) return;
 
-        pushURL.call(recipesView, query, recipeView);
+        const { resultsCount } = await renderRecipeList.call(
+            recipesView,
+            query
+        );
+
+        if (resultsCount > 10) {
+            await renderRecipePagination.call(paginationView, 1);
+        }
+
+        pushURL.call(recipesView, query, recipeView, paginationView);
     } catch (err) {
         const { err: error, view } = err;
         error.message && view.renderError(error.message);
@@ -113,6 +123,8 @@ const loadDataBasedOnURL = async function () {
                     decodeURIComponent(value)
                 );
 
+                paginationView.addHandlerRender(controlPaginationResults);
+
                 if (key === 'page') {
                     if (paginationView._isValidQuery(value))
                         await renderRecipePagination.call(
@@ -139,7 +151,6 @@ const init = function () {
         // BASED ON ACTION OF THE USER
         clickRecipeView.addHandlerRender(controlRecipes);
         searchView.addHandlerRender(controlSearchResults);
-        paginationView.addHandlerRender(controlPaginationResults);
 
         ////////////////////////////////////////////////
         // Produce data based on url + HISTORY API

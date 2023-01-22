@@ -2,6 +2,7 @@ import View from './View';
 
 class PaginationView extends View {
     _parentEl = document.querySelector('.pagination');
+    _childEl = `buttons`;
     _paramSearch = 'page';
     #data;
 
@@ -50,29 +51,27 @@ class PaginationView extends View {
 
         const markup = this.#generateMarkup();
 
-        document
-            .querySelector('.results')
-            .insertAdjacentHTML('afterend', markup);
+        this._parentEl.insertAdjacentHTML(`beforeend`, markup);
     }
 
     #generateMarkup() {
-        return `<div class="pagination">${
+        return `${
             this.#data !== 1
                 ? `<button class="btn--inline pagination__btn--prev">
-                <svg class="search__icon">
-                    <use href="src/img/icons.svg#icon-arrow-left"></use>
-                </svg>
-                <span>Page ${this.#data - 1}</span>
-            </button>`
+                    <svg class="search__icon">
+                        <use href="src/img/icons.svg#icon-arrow-left"></use>
+                    </svg>
+                    <span>Page ${this.#data - 1}</span>
+                   </button>`
                 : ``
         }
-            <button class="btn--inline pagination__btn--next">
-                <span>Page ${this.#data + 1}</span>
-                <svg class="search__icon">
-                    <use href="src/img/icons.svg#icon-arrow-right"></use>
-                </svg>
-            </button>
-        </div>`;
+                   <button class="btn--inline pagination__btn--next">
+                    <span>Page ${this.#data + 1}</span>
+                    <svg class="search__icon">
+                        <use href="src/img/icons.svg#icon-arrow-right"></use>
+                    </svg>
+                    </button>
+                `;
     }
 }
 
