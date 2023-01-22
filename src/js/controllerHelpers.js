@@ -25,7 +25,7 @@ export const renderRecipe = async function (id) {
     }
 };
 
-export const renderRecipeList = async function (query) {
+export const renderRecipeList = async function (query, page = 1) {
     try {
         if (!query) return;
 
@@ -44,16 +44,27 @@ export const renderRecipeList = async function (query) {
             getValidProperties(recipe)
         );
 
-        const currentRecipes = { resultsCount, recipes: validRecipes };
-        const recipePerPage = getSearchResultsPage();
+        const recipePerPage = {
+            recipes: getSearchResultsPage(validRecipes, page),
+            resultsCount,
+        };
 
-        await this.render(currentRecipes);
+        await this.render(recipePerPage);
+    } catch (err) {
+        console.error(err);
+        throw { err, view: this };
+    }
+};
+
+export const renderRecipePagination = function (pageNumber) {
+    try {
+        this.render(pageNumber);
     } catch (err) {
         throw { err, view: this };
     }
 };
 
-export const alreadySearched = function (param, query) {
+export const isAlreadySearched = function (param, query) {
     const { searchParams } = new URL(window.location);
     const storedQuery = searchParams.get(param);
     return query === storedQuery ? 1 : 0;

@@ -64,6 +64,10 @@ export default class View {
         return key === this._childEl;
     }
 
+    getParamSearch() {
+        return this._paramSearch;
+    }
+
     _clear(element) {
         this._parentEl.removeChild(element);
     }

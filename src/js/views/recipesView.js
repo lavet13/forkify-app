@@ -7,7 +7,7 @@ import { TIMEOUT_SEC } from '../config';
 class RecipesView extends View {
     _parentEl = document.querySelector('.search-results');
     _childEl = `results`;
-    _paramSearch = ['search', 'page'];
+    _paramSearch = 'search';
     _errorMessage = `No recipes found for your query! Please try again 💀`;
     #data;
 
@@ -82,7 +82,10 @@ class RecipesView extends View {
                 </li>
             `
             )
-            .join('')}</ul>`;
+            .join('')}</ul>
+                <div class="pagination">
+                </div>
+            `;
     }
 
     async renderOnHistoryNavigation(markup) {

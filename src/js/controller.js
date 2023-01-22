@@ -5,19 +5,23 @@ import recipeView from './views/recipeView';
 import recipesView from './views/recipesView';
 import searchView from './views/searchView';
 import clickRecipeView from './views/clickRecipeView';
+import paginationView from './views/paginationView';
 import {
     renderRecipe,
     renderRecipeList,
+    renderRecipePagination,
     pushURL,
     getViews,
-    alreadySearched,
+    isAlreadySearched,
 } from './controllerHelpers';
+
+import * as Model from './model';
 
 const controlRecipes = async function (e) {
     // application logic
     try {
         const query = clickRecipeView.getQuery(e.target);
-        if (alreadySearched('id', query)) return;
+        if (isAlreadySearched(recipeView.getParamSearch(), query)) return;
 
         await renderRecipe.call(recipeView, query);
 
@@ -31,11 +35,31 @@ const controlRecipes = async function (e) {
 const controlSearchResults = async function () {
     try {
         const query = searchView.getQuery();
-        if (alreadySearched('search', query)) return;
+        if (isAlreadySearched(recipesView.getParamSearch(), query)) return;
 
         await renderRecipeList.call(recipesView, query);
+        await renderRecipePagination.call(paginationView, 1);
 
         pushURL.call(recipesView, query, recipeView);
+    } catch (err) {
+        const { err: error, view } = err;
+        error.message && view.renderError(error.message);
+    }
+};
+
+const controlPaginationResults = async function (e) {
+    try {
+        const pageNumber = paginationView.getQuery(e.target);
+        if (!pageNumber) return;
+
+        const { getSearchResultsPage } = Model;
+
+        const query = getSearchResultsPage(pageNumber);
+
+        await renderRecipeList.call(recipesView, query, pageNumber);
+        await renderRecipePagination.call(paginationView, pageNumber);
+
+        pushURL.call(paginationView, query, recipesView, recipeView);
     } catch (err) {
         const { err: error, view } = err;
         error.message && view.renderError(error.message);
@@ -83,14 +107,19 @@ const loadDataBasedOnURL = async function () {
         console.log(url.searchParams);
 
         for (const [key, value] of url.searchParams) {
-            if (key === 'page') {
-            }
-
             if (key === 'search') {
                 await renderRecipeList.call(
                     recipesView,
                     decodeURIComponent(value)
                 );
+
+                if (key === 'page') {
+                    if (paginationView._isValidQuery(value))
+                        await renderRecipePagination.call(
+                            paginationView,
+                            decodeURIComponent(value)
+                        );
+                }
             }
 
             if (key === 'id') {
@@ -107,8 +136,11 @@ const init = function () {
     try {
         recipeView.renderMessage();
 
+        // BASED ON ACTION OF THE USER
         clickRecipeView.addHandlerRender(controlRecipes);
         searchView.addHandlerRender(controlSearchResults);
+        paginationView.addHandlerRender(controlPaginationResults);
+
         ////////////////////////////////////////////////
         // Produce data based on url + HISTORY API
         window.addEventListener('popstate', handleHistoryNavigation);
