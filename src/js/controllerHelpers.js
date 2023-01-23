@@ -1,5 +1,6 @@
 import recipeView from './views/recipeView';
 import recipesView from './views/recipesView';
+import paginationView from './views/paginationView';
 import { getValidProperties, parseHTML } from './helpers';
 import * as Model from './model';
 
@@ -8,7 +9,7 @@ export const renderRecipe = async function (id) {
         const { loadRecipe } = Model;
         await loadRecipe(id);
 
-        this.renderSpinner();
+        recipeView.renderSpinner();
 
         const {
             state: { recipe },
@@ -17,9 +18,9 @@ export const renderRecipe = async function (id) {
         const currentRecipe = JSON.parse(JSON.stringify(recipe));
         const validRecipe = getValidProperties(currentRecipe);
 
-        await this.render(validRecipe);
+        await recipeView.render(validRecipe);
     } catch (err) {
-        throw { err, view: this };
+        throw { err, view: recipeView };
     }
 };
 
@@ -27,7 +28,7 @@ export const renderRecipeList = async function (query, page = 1) {
     try {
         const { loadSearchResults } = Model;
         await loadSearchResults(query);
-        this.renderSpinner();
+        recipesView.renderSpinner();
 
         const {
             state: {
@@ -41,25 +42,26 @@ export const renderRecipeList = async function (query, page = 1) {
         );
 
         const recipePerPage = {
-            recipes: getSearchResultsPage(validRecipes, page),
+            recipes: getSearchResultsPage(page),
             resultsCount,
         };
 
-        await this.render(recipePerPage);
+        Model.state.search.results = recipePerPage;
+
+        await recipesView.render(recipePerPage);
 
         return recipePerPage;
     } catch (err) {
         console.error(err);
-        throw { err, view: this };
+        throw { err, view: recipesView };
     }
 };
 
 export const renderRecipePagination = function (pageNumber) {
     try {
-        this.renderSpinner();
-        this.render(pageNumber);
+        paginationView.render(pageNumber);
     } catch (err) {
-        throw { err, view: this };
+        throw { err, view: paginationView };
     }
 };
 

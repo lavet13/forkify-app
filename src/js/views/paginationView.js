@@ -51,11 +51,14 @@ class PaginationView extends View {
 
         const markup = this.#generateMarkup();
 
-        this._parentEl.insertAdjacentHTML(`beforeend`, markup);
+        document
+            .querySelector('.search-results')
+            .insertAdjacentHTML(`beforeend`, markup);
     }
 
     #generateMarkup() {
-        return `${
+        return `<div class=".${this._parentEl}">
+                <div class=".${this._childEl}} hidden">${
             this.#data !== 1
                 ? `<button class="btn--inline pagination__btn--prev">
                     <svg class="search__icon">
@@ -71,6 +74,8 @@ class PaginationView extends View {
                         <use href="src/img/icons.svg#icon-arrow-right"></use>
                     </svg>
                     </button>
+                </div>
+                </div>
                 `;
     }
 }
