@@ -42,7 +42,7 @@ export const renderRecipeList = async function (query, page = 1) {
         );
 
         const recipePerPage = {
-            recipes: getSearchResultsPage(page),
+            recipes: getSearchResultsPage(page, validRecipes),
             resultsCount,
         };
 
@@ -59,7 +59,10 @@ export const renderRecipeList = async function (query, page = 1) {
 
 export const renderRecipePagination = function (pageNumber) {
     try {
-        paginationView.render(pageNumber);
+        if (!Number.isFinite(pageNumber))
+            throw new Error('Invalid type of the page');
+
+        paginationView.render(+pageNumber);
     } catch (err) {
         throw { err, view: paginationView };
     }
@@ -81,8 +84,16 @@ export const pushURL = function (query, ...others) {
     });
 
     const url = new URL(window.location);
-    const param = encodeURIComponent(query);
-    url.searchParams.set(this._paramSearch, param);
+
+    if (Array.isArray(query)) {
+        query.forEach(([view, value]) => {
+            const param = encodeURIComponent(value);
+            url.searchParams.set(view._paramSearch, param);
+        });
+    } else {
+        const param = encodeURIComponent(query);
+        url.searchParams.set(this._paramSearch, param);
+    }
 
     const newUrl = `${url.origin}/${url.search}`;
     const JSONObject = JSON.stringify({

@@ -1,4 +1,5 @@
 import View from './View';
+import icons from '../../img/icons.svg';
 
 class PaginationView extends View {
     _parentEl = document.querySelector('.pagination');
@@ -39,6 +40,7 @@ class PaginationView extends View {
     }
 
     addHandlerRender(handler) {
+        this._parentEl = document.querySelector('.pagination');
         this._parentEl.addEventListener('click', e => {
             e.preventDefault();
 
@@ -50,19 +52,22 @@ class PaginationView extends View {
         this.#data = data;
 
         const markup = this.#generateMarkup();
+        console.log(markup);
 
         document
             .querySelector('.search-results')
             .insertAdjacentHTML(`beforeend`, markup);
+
+        document.querySelector(`.${this._childEl}`).classList.remove('hidden');
     }
 
     #generateMarkup() {
-        return `<div class=".${this._parentEl}">
-                <div class=".${this._childEl}} hidden">${
+        return `<div class="pagination">
+                <div class="${this._childEl} hidden">${
             this.#data !== 1
                 ? `<button class="btn--inline pagination__btn--prev">
                     <svg class="search__icon">
-                        <use href="src/img/icons.svg#icon-arrow-left"></use>
+                        <use href="${icons}#icon-arrow-left"></use>
                     </svg>
                     <span>Page ${this.#data - 1}</span>
                    </button>`
@@ -71,7 +76,7 @@ class PaginationView extends View {
                    <button class="btn--inline pagination__btn--next">
                     <span>Page ${this.#data + 1}</span>
                     <svg class="search__icon">
-                        <use href="src/img/icons.svg#icon-arrow-right"></use>
+                        <use href="${icons}#icon-arrow-right"></use>
                     </svg>
                     </button>
                 </div>

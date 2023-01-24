@@ -37,6 +37,7 @@ const controlRecipes = async function (e) {
 const controlSearchResults = async function () {
     try {
         const query = searchView.getQuery();
+        const pageNumber = 1;
         if (isAlreadySearched(recipesView.getParamSearch(), query)) return;
 
         if (!query) return;
@@ -47,10 +48,19 @@ const controlSearchResults = async function () {
         );
 
         if (resultsCount > 10) {
-            await renderRecipePagination.call(paginationView, 1);
+            await renderRecipePagination.call(paginationView, pageNumber);
+            paginationView.addHandlerRender(controlPaginationResults);
         }
 
-        pushURL.call(recipesView, query, recipeView, paginationView);
+        pushURL.call(
+            recipesView,
+            [
+                [recipesView, query],
+                [paginationView, 1],
+            ],
+            recipeView,
+            paginationView
+        );
     } catch (err) {
         const { err: error, view } = err;
         error.message && view.renderError(error.message);
@@ -117,21 +127,19 @@ const loadDataBasedOnURL = async function () {
         console.log(url.searchParams);
 
         for (const [key, value] of url.searchParams) {
+            console.log(key, value);
             if (key === 'search') {
                 await renderRecipeList.call(
                     recipesView,
                     decodeURIComponent(value)
                 );
+            }
 
-                paginationView.addHandlerRender(controlPaginationResults);
-
-                if (key === 'page') {
-                    if (paginationView._isValidQuery(value))
-                        await renderRecipePagination.call(
-                            paginationView,
-                            decodeURIComponent(value)
-                        );
-                }
+            if (key === 'page') {
+                await renderRecipePagination.call(
+                    paginationView,
+                    decodeURIComponent(value)
+                );
             }
 
             if (key === 'id') {
