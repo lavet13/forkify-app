@@ -1,14 +1,9 @@
-import { API_URL, API_KEY, RES_PER_PAGE } from './config';
-import { getJSON } from './helpers';
+import { API_URL, API_KEY } from './config';
+import { getJSON, getValidProperties } from './helpers';
 
 export const state = {
     recipe: {},
-    search: {
-        query: '',
-        resultsCount: '',
-        results: [],
-        resultsPerPage: RES_PER_PAGE,
-    },
+    search: {},
     bookmarks: [],
 };
 
@@ -19,11 +14,9 @@ export const loadRecipe = async function (id) {
             data: { recipe },
         } = await getJSON(`${API_URL}${id}`);
 
-        state.recipe = recipe;
+        state.recipe = getValidProperties(recipe);
     } catch (err) {
-        throw new Error(
-            `We could not find that recipe. Please try another one!`
-        );
+        throw err;
     }
 };
 
@@ -34,16 +27,11 @@ export const loadSearchResults = async function (query) {
             data: { recipes },
         } = await getJSON(`${API_URL}?search=${query}&key=${API_KEY}`);
 
-        state.search.results = recipes;
-        state.search.resultsCount = results;
+        state.search = {
+            results,
+            recipes: recipes.map(recipe => getValidProperties(recipe)),
+        };
     } catch (err) {
         throw err;
     }
-};
-
-export const getSearchResultsPage = function (page, recipes) {
-    const start = (page - 1) * state.search.resultsPerPage;
-    const end = page * state.search.resultsPerPage;
-
-    return recipes.slice(start, end);
 };

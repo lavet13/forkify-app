@@ -1,5 +1,6 @@
-class ClickRecipeView {
+class clickTheRecipe {
     _parentEl = document.querySelector('.search-results');
+    _param = 'id';
 
     constructor() {}
 
@@ -7,7 +8,7 @@ class ClickRecipeView {
         const link = target.closest('.preview__link');
         if (!link) return;
 
-        return link.getAttribute('href').split('=')[1];
+        return decodeURIComponent(link.getAttribute('href').split('=')[1]);
     }
 
     addHandlerRender(handler) {
@@ -18,4 +19,5 @@ class ClickRecipeView {
         });
     }
 }
-export default new ClickRecipeView();
+
+export default new clickTheRecipe();

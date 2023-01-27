@@ -1,172 +1,152 @@
 import 'regenerator-runtime/runtime'; // polyfilling async/await
+import 'core-js/stable';
 
-import View from './views/View';
+import clickTheRecipe from './views/clickTheRecipe';
 import recipeView from './views/recipeView';
-import recipesView from './views/recipesView';
 import searchView from './views/searchView';
-import clickRecipeView from './views/clickRecipeView';
-import paginationView from './views/paginationView';
-import {
-    renderRecipe,
-    renderRecipeList,
-    renderRecipePagination,
-    pushURL,
-    getViews,
-    isAlreadySearched,
-} from './controllerHelpers';
+import resultsView from './views/resultsView';
+import HistoryAPI from './historyAPI';
+import { timeout } from './helpers';
+import { TIMEOUT_SEC } from './config';
 
-import * as Model from './model';
+import * as Model from '../js/model';
 
-const controlRecipes = async function (e) {
-    // application logic
+const controlRecipe = async function (e) {
     try {
-        const query = clickRecipeView.getQuery(e.target);
-        if (isAlreadySearched(recipeView.getParamSearch(), query)) return;
-
+        const query = clickTheRecipe.getQuery(e.target);
         if (!query) return;
+        recipeView.renderSpinner();
 
-        await renderRecipe.call(recipeView, query);
+        HistoryAPI.setURL(clickTheRecipe._param, query);
 
-        pushURL.call(recipeView, query, recipesView, paginationView);
+        const { loadRecipe } = Model;
+
+        await loadRecipe(query);
+
+        const {
+            state: { recipe },
+        } = Model;
+
+        await recipeView.render(recipe);
     } catch (err) {
-        const { err: error, view } = err;
-        error.message && view.renderError(error.message);
+        recipeView.renderError(err);
+    } finally {
+        // add content in history API LULE
+        HistoryAPI.setHistory(...HistoryAPI.historyViews);
     }
 };
 
-const controlSearchResults = async function () {
+const controlSearchResults = async function (e) {
     try {
         const query = searchView.getQuery();
-        const pageNumber = 1;
-        if (isAlreadySearched(recipesView.getParamSearch(), query)) return;
-
         if (!query) return;
+        resultsView.renderSpinner();
 
-        const { resultsCount } = await renderRecipeList.call(
-            recipesView,
-            query
-        );
+        HistoryAPI.setURL(searchView._param, query);
 
-        if (resultsCount > 10) {
-            await renderRecipePagination.call(paginationView, pageNumber);
-            paginationView.addHandlerRender(controlPaginationResults);
-        }
+        const { loadSearchResults } = Model;
 
-        pushURL.call(
-            recipesView,
-            [
-                [recipesView, query],
-                [paginationView, 1],
-            ],
-            recipeView,
-            paginationView
-        );
+        await loadSearchResults(query);
+
+        // numberOfRecipes suppose to be with pagination
+        const {
+            state: {
+                search: { results: numberOfRecipes, recipes },
+            },
+        } = Model;
+
+        await resultsView.render(recipes);
     } catch (err) {
-        const { err: error, view } = err;
-        error.message && view.renderError(error.message);
+        resultsView.renderError(err);
+    } finally {
+        // add content in histroy API LULE
+        HistoryAPI.setHistory(...HistoryAPI.historyViews);
     }
 };
 
-const controlPaginationResults = async function (e) {
-    try {
-        const pageNumber = paginationView.getQuery(e.target);
-        if (!pageNumber) return;
+const controlOnLoad = function () {};
 
-        const { getSearchResultsPage } = Model;
+const controlOnPopState = function (e) {
+    if (!e.state) return;
 
-        const query = getSearchResultsPage(pageNumber);
+    const { searchParams } = new URL(window.location);
 
-        await renderRecipeList.call(recipesView, query, pageNumber);
-        await renderRecipePagination.call(paginationView, pageNumber);
+    searchView._parentEl.querySelector(`[name="query"]`).value =
+        searchParams.get('search');
 
-        pushURL.call(paginationView, query, recipesView, recipeView);
-    } catch (err) {
-        const { err: error, view } = err;
-        error.message && view.renderError(error.message);
-    }
-};
+    const markupViews = JSON.parse(e.state);
+    markupViews.forEach(async ([id, markup]) => {
+        try {
+            switch (id) {
+                case recipeView._id:
+                    if (!markup) break;
 
-//////////////////////////////////////////////////////////////////////
-// HISTORY API
-
-const handleHistoryNavigation = async function (e) {
-    try {
-        if (e.state) {
-            const { markup, _childEl, otherMarkup } = JSON.parse(e.state);
-
-            const hiddenMarkup = View.addHiddenClassToMarkup(markup, _childEl);
-            const othersHiddenMarkup = otherMarkup.reduce(
-                (acc, { _childEl, markup }) => {
-                    return acc.set(
-                        _childEl,
-                        View.addHiddenClassToMarkup(markup, _childEl)
+                    recipeView.renderSpinner();
+                    const spinnerRecipe = recipeView._parentEl.querySelector(
+                        `.${recipeView._spinner}`
                     );
-                },
-                new Map([])
-            );
 
-            const views = getViews(
-                { markup: hiddenMarkup, _childEl },
-                othersHiddenMarkup
-            );
+                    recipeView._hiddenMarkup =
+                        recipeView._addHiddenClass(markup);
 
-            views.forEach(([view]) => view.renderSpinner());
-            views.forEach(
-                async ([view, markup]) =>
-                    await view.renderOnHistoryNavigation(markup.outerHTML)
-            );
+                    recipeView._parentEl.insertAdjacentHTML(
+                        'beforeend',
+                        recipeView._hiddenMarkup
+                    );
+                    await Promise.race([
+                        recipeView._downloadImage(
+                            recipeView._parentEl.querySelector(`.recipe__img`)
+                        ),
+                        timeout(TIMEOUT_SEC),
+                    ]);
+
+                    spinnerRecipe && spinnerRecipe.remove();
+                    break;
+
+                case resultsView._id:
+                    if (!markup) break;
+
+                    resultsView.renderSpinner();
+                    const spinnerResults = resultsView._parentEl.querySelector(
+                        `.${resultsView._spinner}`
+                    );
+
+                    resultsView._hiddenMarkup =
+                        resultsView._addHiddenClass(markup);
+
+                    resultsView._parentEl.insertAdjacentHTML(
+                        'afterbegin',
+                        resultsView._hiddenMarkup
+                    );
+
+                    await Promise.all(
+                        resultsView._downloadImages(
+                            Array.from(
+                                resultsView._parentEl.querySelectorAll(
+                                    `.preview__fig img`
+                                )
+                            )
+                        )
+                    );
+
+                    resultsView._parentEl
+                        .querySelector(`.${resultsView._childEl}`)
+                        .classList.remove('hidden');
+
+                    spinnerResults && spinnerResults.remove();
+                    break;
+            }
+        } catch (err) {
+            console.error(err);
         }
-    } catch (err) {
-        console.error(err);
-    }
-};
-
-const loadDataBasedOnURL = async function () {
-    try {
-        const url = new URL(window.location);
-        console.log(url.searchParams);
-
-        for (const [key, value] of url.searchParams) {
-            console.log(key, value);
-            if (key === 'search') {
-                await renderRecipeList.call(
-                    recipesView,
-                    decodeURIComponent(value)
-                );
-            }
-
-            if (key === 'page') {
-                await renderRecipePagination.call(
-                    paginationView,
-                    decodeURIComponent(value)
-                );
-            }
-
-            if (key === 'id') {
-                await renderRecipe.call(recipeView, decodeURIComponent(value));
-            }
-        }
-    } catch (err) {
-        const { err: error, view } = err;
-        error.message && view.renderError(error.message);
-    }
+    });
 };
 
 const init = function () {
-    try {
-        recipeView.renderMessage();
-
-        // BASED ON ACTION OF THE USER
-        clickRecipeView.addHandlerRender(controlRecipes);
-        searchView.addHandlerRender(controlSearchResults);
-
-        ////////////////////////////////////////////////
-        // Produce data based on url + HISTORY API
-        window.addEventListener('popstate', handleHistoryNavigation);
-        window.addEventListener('load', loadDataBasedOnURL);
-    } catch (err) {
-        console.error(err);
-    }
+    clickTheRecipe.addHandlerRender(controlRecipe);
+    searchView.addHandlerRender(controlSearchResults);
+    HistoryAPI.addHandlerOnLoad(controlOnLoad);
+    HistoryAPI.addHandlerOnPopState(controlOnPopState);
 };
 
 init();
