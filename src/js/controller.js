@@ -31,7 +31,6 @@ const controlRecipe = async function (e) {
     } catch (err) {
         recipeView.renderError(err);
     } finally {
-        // add content in history API LULE
         HistoryAPI.setHistory(...HistoryAPI.historyViews);
     }
 };
@@ -59,22 +58,82 @@ const controlSearchResults = async function (e) {
     } catch (err) {
         resultsView.renderError(err);
     } finally {
-        // add content in histroy API LULE
         HistoryAPI.setHistory(...HistoryAPI.historyViews);
     }
 };
 
-const controlOnLoad = function () {};
+const controlOnLoad = function () {
+    const { searchParams } = new URL(window.location);
+    if ([...searchParams.entries()].length === 0) return;
+    searchParams.forEach(async (query, param) => {
+        try {
+            if (param === 'search') {
+                searchView._parentEl.querySelector(`[name="query"]`).value =
+                    searchParams.get('search');
+
+                resultsView.renderSpinner();
+
+                const { loadSearchResults } = Model;
+
+                await loadSearchResults(decodeURIComponent(query));
+
+                // numberOfRecipes suppose to be with pagination
+                const {
+                    state: {
+                        search: { results: numberOfRecipes, recipes },
+                    },
+                } = Model;
+
+                await resultsView.render(recipes);
+            }
+
+            if (param === 'id') {
+                recipeView.renderSpinner();
+
+                const { loadRecipe } = Model;
+
+                await loadRecipe(query);
+
+                const {
+                    state: { recipe },
+                } = Model;
+
+                await recipeView.render(recipe);
+            }
+        } catch (err) {
+            console.error(err);
+        }
+    });
+};
 
 const controlOnPopState = function (e) {
-    if (!e.state) return;
+    if (!e.state) {
+        console.log('!e.state');
+        const { searchParams } = new URL(window.location);
+        if ([...searchParams.entries()].length !== 0) return;
+        searchView._parentEl.querySelector(`[name="query"]`).value = '';
+        resultsView._parentEl
+            .querySelector(`.${resultsView._childEl}`)
+            .replaceChildren();
+        recipeView._parentEl
+            .querySelector(`.${recipeView._childEl}`)
+            .replaceChildren();
+        return;
+    }
+    console.log('e.state');
 
     const { searchParams } = new URL(window.location);
 
     searchView._parentEl.querySelector(`[name="query"]`).value =
         searchParams.get('search');
 
+    if (!searchParams.get('id'))
+        recipeView._parentEl
+            .querySelector(`.${recipeView._childEl}`)
+            ?.replaceChildren();
+
     const markupViews = JSON.parse(e.state);
+    console.log(markupViews);
     markupViews.forEach(async ([id, markup]) => {
         try {
             switch (id) {

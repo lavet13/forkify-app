@@ -12,7 +12,7 @@ class RecipeView {
     _errorMessage = `recipe 😐`;
     _markup = ``;
     _hiddenMarkup = ``;
-    _id = guidGenerator();
+    _id = 'b9919acb-5223-330a-2f98-02cd1ed5a288';
     #data;
 
     constructor() {}

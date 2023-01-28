@@ -11,7 +11,7 @@ class ResultsView {
     _errorMessage = `No such recipes to be found!`;
     _markup = ``;
     _hiddenMarkup = ``;
-    _id = guidGenerator();
+    _id = 'dbabfec5-dcc0-127a-24a0-22e42cbd7441';
     #data;
 
     constructor() {}
