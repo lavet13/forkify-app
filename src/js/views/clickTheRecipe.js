@@ -1,4 +1,4 @@
-class clickTheRecipe {
+class ClickTheRecipe {
     _parentEl = document.querySelector('.search-results');
     _param = 'id';
 
@@ -20,4 +20,4 @@ class clickTheRecipe {
     }
 }
 
-export default new clickTheRecipe();
+export default new ClickTheRecipe();

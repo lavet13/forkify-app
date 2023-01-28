@@ -10,6 +10,7 @@ import { timeout } from './helpers';
 import { TIMEOUT_SEC } from './config';
 
 import * as Model from '../js/model';
+import clickThePagination from './views/clickThePagination';
 
 const controlRecipe = async function (e) {
     try {
@@ -54,12 +55,20 @@ const controlSearchResults = async function (e) {
             },
         } = Model;
 
+        if (numberOfRecipes > 10) {
+            HistoryAPI.setURL(searchView._param, 1);
+        }
+
         await resultsView.render(recipes);
     } catch (err) {
         resultsView.renderError(err);
     } finally {
         HistoryAPI.setHistory(...HistoryAPI.historyViews);
     }
+};
+
+const controlPaginationResults = async function (e) {
+    console.log(123);
 };
 
 const controlOnLoad = function () {
@@ -204,6 +213,7 @@ const controlOnPopState = function (e) {
 const init = function () {
     clickTheRecipe.addHandlerRender(controlRecipe);
     searchView.addHandlerRender(controlSearchResults);
+    clickThePagination.addHandlerRender(controlPaginationResults);
     HistoryAPI.addHandlerOnLoad(controlOnLoad);
     HistoryAPI.addHandlerOnPopState(controlOnPopState);
 };

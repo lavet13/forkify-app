@@ -1,5 +1,5 @@
 import icons from '../../img/icons.svg';
-import { timeout, parseHTML, guidGenerator } from '../helpers';
+import { timeout, parseHTML } from '../helpers';
 import { TIMEOUT_SEC } from '../config';
 
 class ResultsView {
