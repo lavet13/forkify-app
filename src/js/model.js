@@ -42,3 +42,7 @@ export const getSearchResultsPage = function (page) {
 
     return state.search.recipes.slice(start, end);
 };
+
+export const getTotalCountPage = function () {
+    return Math.trunc(state.search.results / 10);
+};

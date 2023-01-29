@@ -1,4 +1,5 @@
 import icons from '../../img/icons.svg';
+import { parseHTML } from '../helpers';
 
 class PaginationView {
     _parentEl = document.querySelector('.pagination');
@@ -6,7 +7,7 @@ class PaginationView {
     _spinner = 'spinner';
     _message = 'message';
     _error = 'error';
-    _errorMessage = `Something went wrong :(`;
+    _errorMessage = `Something went wrong with buttons :(`;
     _markup = ``;
     _hiddenMarkup = ``;
     _id = 'ac1f4d84-3402-f04d-c36d-1ea3761e8018';
@@ -58,14 +59,23 @@ class PaginationView {
     }
 
     render(data) {
-        this.#data = data;
+        try {
+            this.#data = data;
 
-        this.#generateMarkup();
-        this._hiddenMarkup = this._addHiddenClass(this._markup);
-        this._parentEl.insertAdjacentHTML('afterbegin', this._hiddenMarkup);
-        this._parentEl
-            .querySelector(`.${this._childEl}`)
-            .classList.remove('hidden');
+            this.#generateMarkup();
+            this._hiddenMarkup = this._addHiddenClass(this._markup);
+            const spinner = this._parentEl.querySelector(`.${this._spinner}`);
+
+            this._parentEl.insertAdjacentHTML('afterbegin', this._hiddenMarkup);
+            this._parentEl
+                .querySelector(`.${this._childEl}`)
+                .classList.remove('hidden');
+
+            spinner && spinner.remove();
+        } catch (err) {
+            console.error(err);
+            throw err;
+        }
     }
 
     _addHiddenClass(markup) {
@@ -75,20 +85,33 @@ class PaginationView {
     }
 
     #generateMarkup() {
-        return `
+        const { pageNumber, totalPageCount } = this.#data;
+        console.log(`pageNumber = ${pageNumber}`);
+        console.log(`totalPageCount = ${totalPageCount}`);
+
+        this._markup = `
         <div class="${this._childEl}">
-            <button class="btn--inline pagination__btn--prev">
+            ${
+                pageNumber > 1
+                    ? `<button class="btn--inline pagination__btn--prev">
                 <svg class="search__icon">
                     <use href="${icons}#icon-arrow-left"></use>
                 </svg>
-                <span>Page 1</span>
-            </button>
-            <button class="btn--inline pagination__btn--next">
-                <span>Page 3</span>
+                <span>Page ${pageNumber - 1}</span>
+            </button>`
+                    : ``
+            }
+            ${
+                pageNumber <= totalPageCount
+                    ? `<button class="btn--inline pagination__btn--next">
+                <span>Page ${pageNumber + 1}</span>
                 <svg class="search__icon">
                     <use href="${icons}#icon-arrow-right"></use>
                 </svg>
-            </button>
+            </button>`
+                    : ``
+            }
+            
         </div>
         `;
     }

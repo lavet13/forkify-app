@@ -1,10 +1,12 @@
-import recipeView from './views/recipeView';
-import resultsView from './views/resultsView';
+import paginationView from '../views/paginationView';
+import recipeView from '../views/recipeView';
+import resultsView from '../views/resultsView';
 
 export default class HistoryAPI {
     static historyViews = new Map([
         [recipeView._id, recipeView],
         [resultsView._id, resultsView],
+        [paginationView._id, paginationView],
     ]);
 
     constructor() {}
@@ -15,6 +17,14 @@ export default class HistoryAPI {
         searchParams.set(paramKey, paramValue);
         const newURL = `${url.origin}/${url.search}`;
         history.pushState(null, document.title, newURL);
+    }
+
+    static deleteSearchParameter(paramKey) {
+        const url = new URL(window.location);
+        const { searchParams } = url;
+        searchParams.delete(paramKey);
+        const newURL = `${url.origin}/${url.search}`;
+        history.replaceState(null, document.title, newURL);
     }
 
     static setHistory(...views) {

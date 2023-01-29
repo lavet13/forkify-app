@@ -5,7 +5,8 @@ import clickTheRecipe from './views/clickTheRecipe';
 import recipeView from './views/recipeView';
 import searchView from './views/searchView';
 import resultsView from './views/resultsView';
-import HistoryAPI from './historyAPI';
+import paginationView from './views/paginationView';
+import HistoryAPI from './modules/historyAPI';
 import { timeout } from './helpers';
 import { TIMEOUT_SEC } from './config';
 
@@ -16,6 +17,8 @@ const controlRecipe = async function (e) {
     try {
         const query = clickTheRecipe.getQuery(e.target);
         if (!query) return;
+
+        clickTheRecipe._paramValue = decodeURIComponent(query);
         recipeView.renderSpinner();
 
         HistoryAPI.setURL(clickTheRecipe._param, query);
@@ -40,24 +43,42 @@ const controlSearchResults = async function (e) {
     try {
         const query = searchView.getQuery();
         if (!query) return;
+
+        searchView._paramValue = decodeURIComponent(query);
         resultsView.renderSpinner();
 
-        HistoryAPI.setURL(searchView._param, query);
+        HistoryAPI.setURL(searchView._param, searchView._paramValue);
+        HistoryAPI.deleteSearchParameter(clickThePagination._param);
 
         const { loadSearchResults } = Model;
 
         await loadSearchResults(query);
 
-        // numberOfRecipes suppose to be with pagination
         const {
             state: {
                 search: { results: numberOfRecipes, recipes },
             },
+            getSearchResultsPage,
+            getTotalCountPage,
         } = Model;
+        console.log(numberOfRecipes);
 
         if (numberOfRecipes > 10) {
-            HistoryAPI.setURL(searchView._param, 1);
+            clickThePagination._totalPageCount = getTotalCountPage();
+            const { _totalPageCount: totalPageCount } = clickThePagination;
+            paginationView.renderSpinner();
+            clickThePagination._paramValue = 1;
+            const { _paramValue: pageNumber } = clickThePagination;
+            const recipesPerPage = getSearchResultsPage(pageNumber);
+            HistoryAPI.setURL(clickThePagination._param, pageNumber);
+            await resultsView.render(recipesPerPage);
+            paginationView.render({ pageNumber, totalPageCount });
+            return;
         }
+
+        paginationView._parentEl
+            .querySelector(`.${paginationView._childEl}`)
+            ?.remove();
 
         await resultsView.render(recipes);
     } catch (err) {
@@ -68,7 +89,39 @@ const controlSearchResults = async function (e) {
 };
 
 const controlPaginationResults = async function (e) {
-    console.log(123);
+    try {
+        const button = e.target.closest('.btn--inline');
+        if (!button) return;
+
+        if (button.classList.contains('pagination__btn--prev')) {
+            clickThePagination.decrementPageNumber();
+        }
+        if (button.classList.contains('pagination__btn--next')) {
+            clickThePagination.incrementPageNumber();
+        }
+
+        resultsView.renderSpinner();
+        paginationView.renderSpinner();
+
+        const { _param: searchParam, _paramValue: searchValue } = searchView;
+        const {
+            _param: paginationParam,
+            _paramValue: pageNumber,
+            _totalPageCount: totalPageCount,
+        } = clickThePagination;
+
+        HistoryAPI.setURL(searchParam, searchValue);
+        HistoryAPI.setURL(paginationParam, pageNumber);
+
+        const { getSearchResultsPage } = Model;
+        const recipesPerPage = getSearchResultsPage(pageNumber);
+        await resultsView.render(recipesPerPage);
+        paginationView.render({ pageNumber, totalPageCount });
+    } catch (err) {
+        resultsView.renderError(err);
+    } finally {
+        HistoryAPI.setHistory(...HistoryAPI.historyViews);
+    }
 };
 
 const controlOnLoad = function () {
@@ -76,9 +129,11 @@ const controlOnLoad = function () {
     if ([...searchParams.entries()].length === 0) return;
     searchParams.forEach(async (query, param) => {
         try {
+            // since search loading all the recipes and at the same time produce pagination buttons,
+            // there's no need for page parameter in this case
             if (param === 'search') {
                 searchView._parentEl.querySelector(`[name="query"]`).value =
-                    searchParams.get('search');
+                    decodeURIComponent(searchParams.get('search'));
 
                 resultsView.renderSpinner();
 
@@ -91,7 +146,28 @@ const controlOnLoad = function () {
                     state: {
                         search: { results: numberOfRecipes, recipes },
                     },
+                    getSearchResultsPage,
+                    getTotalCountPage,
                 } = Model;
+
+                if (numberOfRecipes > 10) {
+                    clickThePagination._totalPageCount = getTotalCountPage();
+                    const { _totalPageCount: totalPageCount } =
+                        clickThePagination;
+
+                    paginationView.renderSpinner();
+                    clickThePagination._paramValue =
+                        +decodeURIComponent(
+                            searchParams.get(clickThePagination._param)
+                        ) ?? 1;
+                    const { _paramValue: pageNumber } = clickThePagination;
+
+                    const recipesPerPage = getSearchResultsPage(pageNumber);
+                    HistoryAPI.setURL(clickThePagination._param, pageNumber);
+                    await resultsView.render(recipesPerPage);
+                    paginationView.render({ pageNumber, totalPageCount });
+                    return;
+                }
 
                 await resultsView.render(recipes);
             }
@@ -101,7 +177,7 @@ const controlOnLoad = function () {
 
                 const { loadRecipe } = Model;
 
-                await loadRecipe(query);
+                await loadRecipe(decodeURIComponent(query));
 
                 const {
                     state: { recipe },
@@ -123,10 +199,11 @@ const controlOnPopState = function (e) {
         searchView._parentEl.querySelector(`[name="query"]`).value = '';
         resultsView._parentEl
             .querySelector(`.${resultsView._childEl}`)
-            .replaceChildren();
-        recipeView._parentEl
-            .querySelector(`.${recipeView._childEl}`)
-            .replaceChildren();
+            ?.replaceChildren();
+        recipeView._parentEl.querySelector(`.${recipeView._childEl}`)?.remove();
+        paginationView._parentEl
+            .querySelector(`.${paginationView._childEl}`)
+            ?.remove();
         return;
     }
     console.log('e.state');
@@ -134,12 +211,15 @@ const controlOnPopState = function (e) {
     const { searchParams } = new URL(window.location);
 
     searchView._parentEl.querySelector(`[name="query"]`).value =
-        searchParams.get('search');
+        decodeURIComponent(searchParams.get('search'));
 
     if (!searchParams.get('id'))
-        recipeView._parentEl
-            .querySelector(`.${recipeView._childEl}`)
-            ?.replaceChildren();
+        recipeView._parentEl.querySelector(`.${recipeView._childEl}`)?.remove();
+
+    if (!searchParams.get('page'))
+        paginationView._parentEl
+            .querySelector(`.${paginationView._childEl}`)
+            ?.remove();
 
     const markupViews = JSON.parse(e.state);
     console.log(markupViews);
@@ -202,6 +282,16 @@ const controlOnPopState = function (e) {
                         .classList.remove('hidden');
 
                     spinnerResults && spinnerResults.remove();
+                    break;
+
+                case paginationView._id:
+                    if (!markup) break;
+
+                    paginationView.renderSpinner();
+                    const spinnerPagination =
+                        paginationView._parentEl.querySelector(
+                            `.${paginationView._spinner}`
+                        );
                     break;
             }
         } catch (err) {

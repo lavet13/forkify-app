@@ -1,6 +1,7 @@
 class SearchView {
     _parentEl = document.querySelector('.search');
     _param = 'search';
+    _paramValue;
 
     constructor() {}
 

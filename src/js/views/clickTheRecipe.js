@@ -1,6 +1,7 @@
 class ClickTheRecipe {
     _parentEl = document.querySelector('.search-results');
     _param = 'id';
+    _paramValue;
 
     constructor() {}
 
