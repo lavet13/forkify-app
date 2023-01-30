@@ -160,7 +160,7 @@ const controlOnLoad = function () {
                     const { _paramValue: pageNumber } = clickThePagination;
 
                     const recipesPerPage = getSearchResultsPage(pageNumber);
-                    if (!Number.isFinite(pageNumber))
+                    if (!Number.isFinite(pageNumber) || pageNumber <= 0)
                         throw new Error('Invalid page');
                     HistoryAPI.setURL(clickThePagination._param, pageNumber);
                     await resultsView.render(recipesPerPage);
