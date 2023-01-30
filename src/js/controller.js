@@ -103,14 +103,12 @@ const controlPaginationResults = async function (e) {
         resultsView.renderSpinner();
         paginationView.renderSpinner();
 
-        const { _param: searchParam, _paramValue: searchValue } = searchView;
         const {
             _param: paginationParam,
             _paramValue: pageNumber,
             _totalPageCount: totalPageCount,
         } = clickThePagination;
 
-        HistoryAPI.setURL(searchParam, searchValue);
         HistoryAPI.setURL(paginationParam, pageNumber);
 
         const { getSearchResultsPage } = Model;
@@ -141,7 +139,6 @@ const controlOnLoad = function () {
 
                 await loadSearchResults(decodeURIComponent(query));
 
-                // numberOfRecipes suppose to be with pagination
                 const {
                     state: {
                         search: { results: numberOfRecipes, recipes },
@@ -186,7 +183,10 @@ const controlOnLoad = function () {
                 await recipeView.render(recipe);
             }
         } catch (err) {
-            console.error(err);
+            resultsView.renderError(err);
+            paginationView._parentEl
+                .querySelector(`.${paginationView._spinner}`)
+                ?.remove();
         }
     });
 };
@@ -195,11 +195,11 @@ const controlOnPopState = function (e) {
     if (!e.state) {
         console.log('!e.state');
         const { searchParams } = new URL(window.location);
-        if ([...searchParams.entries()].length !== 0) return;
-        searchView._parentEl.querySelector(`[name="query"]`).value = '';
+        if ([...searchParams.entries()].length !== 0)
+            searchView._parentEl.querySelector(`[name="query"]`).value = '';
         resultsView._parentEl
             .querySelector(`.${resultsView._childEl}`)
-            ?.replaceChildren();
+            ?.remove();
         recipeView._parentEl.querySelector(`.${recipeView._childEl}`)?.remove();
         paginationView._parentEl
             .querySelector(`.${paginationView._childEl}`)
@@ -212,6 +212,11 @@ const controlOnPopState = function (e) {
 
     searchView._parentEl.querySelector(`[name="query"]`).value =
         decodeURIComponent(searchParams.get('search'));
+
+    if (!searchParams.get('search'))
+        resultsView._parentEl
+            .querySelector(`.${resultsView._childEl}`)
+            ?.remove();
 
     if (!searchParams.get('id'))
         recipeView._parentEl.querySelector(`.${recipeView._childEl}`)?.remove();
@@ -279,7 +284,7 @@ const controlOnPopState = function (e) {
 
                     resultsView._parentEl
                         .querySelector(`.${resultsView._childEl}`)
-                        .classList.remove('hidden');
+                        ?.classList.remove('hidden');
 
                     spinnerResults && spinnerResults.remove();
                     break;
@@ -288,10 +293,24 @@ const controlOnPopState = function (e) {
                     if (!markup) break;
 
                     paginationView.renderSpinner();
+
                     const spinnerPagination =
                         paginationView._parentEl.querySelector(
                             `.${paginationView._spinner}`
                         );
+
+                    paginationView._hiddenMarkup =
+                        paginationView._addHiddenClass(markup);
+
+                    paginationView._parentEl.insertAdjacentHTML(
+                        'afterbegin',
+                        paginationView._hiddenMarkup
+                    );
+                    paginationView._parentEl
+                        .querySelector(`.${paginationView._childEl}`)
+                        ?.classList.remove('hidden');
+
+                    spinnerPagination && spinnerPagination.remove();
                     break;
             }
         } catch (err) {
