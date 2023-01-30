@@ -21,11 +21,11 @@ const controlRecipe = async function (e) {
         clickTheRecipe._paramValue = decodeURIComponent(query);
         recipeView.renderSpinner();
 
-        HistoryAPI.setURL(clickTheRecipe._param, query);
+        HistoryAPI.setURL(clickTheRecipe._param, clickTheRecipe._paramValue);
 
         const { loadRecipe } = Model;
 
-        await loadRecipe(query);
+        await loadRecipe(clickTheRecipe._paramValue);
 
         const {
             state: { recipe },
@@ -52,7 +52,7 @@ const controlSearchResults = async function (e) {
 
         const { loadSearchResults } = Model;
 
-        await loadSearchResults(query);
+        await loadSearchResults(searchView._paramValue);
 
         const {
             state: {
@@ -116,7 +116,7 @@ const controlPaginationResults = async function (e) {
         await resultsView.render(recipesPerPage);
         paginationView.render({ pageNumber, totalPageCount });
     } catch (err) {
-        resultsView.renderError(err);
+        paginationView.renderError(err);
     } finally {
         HistoryAPI.setHistory(...HistoryAPI.historyViews);
     }
@@ -129,15 +129,15 @@ const controlOnLoad = function () {
         try {
             // since search loading all the recipes and at the same time produce pagination buttons,
             // there's no need for page parameter in this case
-            if (param === 'search') {
+            if (param === searchView._param) {
                 searchView._parentEl.querySelector(`[name="query"]`).value =
-                    decodeURIComponent(searchParams.get('search'));
+                    decodeURIComponent(searchParams.get(searchView._param));
 
                 resultsView.renderSpinner();
 
                 const { loadSearchResults } = Model;
 
-                await loadSearchResults(decodeURIComponent(query));
+                await loadSearchResults(query);
 
                 const {
                     state: {
@@ -160,6 +160,8 @@ const controlOnLoad = function () {
                     const { _paramValue: pageNumber } = clickThePagination;
 
                     const recipesPerPage = getSearchResultsPage(pageNumber);
+                    if (!Number.isFinite(pageNumber))
+                        throw new Error('Invalid page');
                     HistoryAPI.setURL(clickThePagination._param, pageNumber);
                     await resultsView.render(recipesPerPage);
                     paginationView.render({ pageNumber, totalPageCount });
@@ -169,18 +171,22 @@ const controlOnLoad = function () {
                 await resultsView.render(recipes);
             }
 
-            if (param === 'id') {
-                recipeView.renderSpinner();
+            if (param === clickTheRecipe._param) {
+                try {
+                    recipeView.renderSpinner();
 
-                const { loadRecipe } = Model;
+                    const { loadRecipe } = Model;
 
-                await loadRecipe(decodeURIComponent(query));
+                    await loadRecipe(query);
 
-                const {
-                    state: { recipe },
-                } = Model;
+                    const {
+                        state: { recipe },
+                    } = Model;
 
-                await recipeView.render(recipe);
+                    await recipeView.render(recipe);
+                } catch (err) {
+                    recipeView.renderError(err);
+                }
             }
         } catch (err) {
             resultsView.renderError(err);
@@ -211,17 +217,17 @@ const controlOnPopState = function (e) {
     const { searchParams } = new URL(window.location);
 
     searchView._parentEl.querySelector(`[name="query"]`).value =
-        decodeURIComponent(searchParams.get('search'));
+        decodeURIComponent(searchParams.get(searchView._param));
 
-    if (!searchParams.get('search'))
+    if (!searchParams.get(searchView._param))
         resultsView._parentEl
             .querySelector(`.${resultsView._childEl}`)
             ?.remove();
 
-    if (!searchParams.get('id'))
+    if (!searchParams.get(clickTheRecipe._param))
         recipeView._parentEl.querySelector(`.${recipeView._childEl}`)?.remove();
 
-    if (!searchParams.get('page'))
+    if (!searchParams.get(clickThePagination._param))
         paginationView._parentEl
             .querySelector(`.${paginationView._childEl}`)
             ?.remove();
@@ -229,9 +235,9 @@ const controlOnPopState = function (e) {
     const markupViews = JSON.parse(e.state);
     console.log(markupViews);
     markupViews.forEach(async ([id, markup]) => {
-        try {
-            switch (id) {
-                case recipeView._id:
+        switch (id) {
+            case recipeView._id:
+                try {
                     if (!markup) break;
 
                     recipeView.renderSpinner();
@@ -254,9 +260,13 @@ const controlOnPopState = function (e) {
                     ]);
 
                     spinnerRecipe && spinnerRecipe.remove();
-                    break;
+                } catch (err) {
+                    recipeView.renderError(err);
+                }
+                break;
 
-                case resultsView._id:
+            case resultsView._id:
+                try {
                     if (!markup) break;
 
                     resultsView.renderSpinner();
@@ -287,9 +297,16 @@ const controlOnPopState = function (e) {
                         ?.classList.remove('hidden');
 
                     spinnerResults && spinnerResults.remove();
-                    break;
+                } catch (err) {
+                    resultsView.renderError(err);
+                    paginationView._parentEl
+                        .querySelector(`.${paginationView._spinner}`)
+                        ?.remove();
+                }
+                break;
 
-                case paginationView._id:
+            case paginationView._id:
+                try {
                     if (!markup) break;
 
                     paginationView.renderSpinner();
@@ -311,10 +328,10 @@ const controlOnPopState = function (e) {
                         ?.classList.remove('hidden');
 
                     spinnerPagination && spinnerPagination.remove();
-                    break;
-            }
-        } catch (err) {
-            console.error(err);
+                } catch (err) {
+                    paginationView.renderError(err);
+                }
+                break;
         }
     });
 };

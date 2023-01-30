@@ -1,4 +1,4 @@
-import { API_URL, API_KEY } from './config';
+import { API_URL, API_KEY, RES_PER_PAGE } from './config';
 import { getJSON, getValidProperties } from './helpers';
 
 export const state = {
@@ -30,6 +30,7 @@ export const loadSearchResults = async function (query) {
         state.search = {
             results,
             recipes: recipes.map(recipe => getValidProperties(recipe)),
+            resultsPerPage: RES_PER_PAGE,
         };
     } catch (err) {
         throw err;
@@ -37,12 +38,12 @@ export const loadSearchResults = async function (query) {
 };
 
 export const getSearchResultsPage = function (page) {
-    const start = (page - 1) * 10;
-    const end = page * 10;
+    const start = (page - 1) * state.search.resultsPerPage;
+    const end = page * state.search.resultsPerPage;
 
     return state.search.recipes.slice(start, end);
 };
 
 export const getTotalCountPage = function () {
-    return Math.trunc(state.search.results / 10);
+    return Math.trunc(state.search.results / state.search.resultsPerPage);
 };
