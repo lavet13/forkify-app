@@ -1,3 +1,4 @@
+import servingsView from './servingsView';
 import icons from '../../img/icons.svg';
 import { timeout, parseHTML } from '../helpers';
 import { TIMEOUT_SEC } from '../config';
@@ -112,7 +113,7 @@ class RecipeView {
         } = this.#data;
 
         this._markup = `
-            <div class="${this._childEl}">
+            <div class="${this._childEl}" data-id="${id}">
                 <figure class="recipe__fig">
                   <img src="${imageUrl}" alt="${title}" class="recipe__img" />
                   <h1 class="recipe__title">
@@ -132,7 +133,9 @@ class RecipeView {
                     <svg class="recipe__info-icon">
                       <use href="${icons}#icon-users"></use>
                     </svg>
-                    <span class="recipe__info-data recipe__info-data--people">${servings}</span>
+                    <span class="recipe__info-data recipe__info-data--people">${
+                        servingsView._paramValue ?? servings
+                    }</span>
                     <span class="recipe__info-text">servings</span>
 
                     <div class="recipe__info-buttons">

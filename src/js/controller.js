@@ -6,12 +6,15 @@ import recipeView from './views/recipeView';
 import searchView from './views/searchView';
 import resultsView from './views/resultsView';
 import paginationView from './views/paginationView';
+import clickThePagination from './views/clickThePagination';
+import clickTheServings from './views/clickTheServings';
+import servingsView from './views/servingsView';
+import clickTheBookmarkBtn from './views/clickTheBookmarkBtn';
 import HistoryAPI from './modules/historyAPI';
 import { timeout } from './helpers';
 import { TIMEOUT_SEC } from './config';
 
 import * as Model from '../js/model';
-import clickThePagination from './views/clickThePagination';
 
 const controlRecipe = async function (e) {
     try {
@@ -120,6 +123,37 @@ const controlPaginationResults = async function (e) {
     } finally {
         HistoryAPI.setHistory(...HistoryAPI.historyViews);
     }
+};
+
+const controlServings = function (e) {
+    try {
+        const button = e.target.closest('.btn--increase-servings');
+        if (!button) return;
+
+        servingsView._paramValue = servingsView._parentEl.querySelector(
+            '.recipe__info-data--people'
+        )?.textContent;
+
+        if (!Number.isFinite(Number.parseInt(servingsView._paramValue)))
+            throw new Error('Invalid servings');
+
+        if (button.querySelector('[href$="#icon-minus-circle"]'))
+            servingsView.decreaseServings();
+
+        if (button.querySelector('[href$="#icon-plus-circle"]'))
+            servingsView.increaseServings();
+
+        servingsView._parentEl.querySelector(
+            '.recipe__info-data--people'
+        ).textContent &&= servingsView._paramValue;
+    } catch (err) {
+    } finally {
+        HistoryAPI.setHistory(...HistoryAPI.historyViews);
+    }
+};
+
+const controlBookmarkBtn = function (e) {
+    const button = e.target.closest('button.btn--round');
 };
 
 const controlOnLoad = function () {
@@ -340,6 +374,8 @@ const init = function () {
     clickTheRecipe.addHandlerRender(controlRecipe);
     searchView.addHandlerRender(controlSearchResults);
     clickThePagination.addHandlerRender(controlPaginationResults);
+    clickTheServings.addHandlerRender(controlServings);
+    clickTheBookmarkBtn.addHandlerRender(controlBookmarkBtn);
     HistoryAPI.addHandlerOnLoad(controlOnLoad);
     HistoryAPI.addHandlerOnPopState(controlOnPopState);
 };
