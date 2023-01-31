@@ -112,6 +112,8 @@ class RecipeView {
             title,
         } = this.#data;
 
+        servingsView._paramValue = servings;
+
         this._markup = `
             <div class="${this._childEl}" data-id="${id}">
                 <figure class="recipe__fig">
@@ -134,7 +136,7 @@ class RecipeView {
                       <use href="${icons}#icon-users"></use>
                     </svg>
                     <span class="recipe__info-data recipe__info-data--people">${
-                        servingsView._paramValue ?? servings
+                        servingsView._paramValue
                     }</span>
                     <span class="recipe__info-text">servings</span>
 

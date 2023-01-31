@@ -130,23 +130,19 @@ const controlServings = function (e) {
         const button = e.target.closest('.btn--increase-servings');
         if (!button) return;
 
-        servingsView._paramValue = servingsView._parentEl.querySelector(
-            '.recipe__info-data--people'
-        )?.textContent;
-
-        if (!Number.isFinite(Number.parseInt(servingsView._paramValue)))
-            throw new Error('Invalid servings');
-
         if (button.querySelector('[href$="#icon-minus-circle"]'))
             servingsView.decreaseServings();
 
         if (button.querySelector('[href$="#icon-plus-circle"]'))
             servingsView.increaseServings();
+        console.log(servingsView._paramValue);
 
-        servingsView._parentEl.querySelector(
-            '.recipe__info-data--people'
-        ).textContent &&= servingsView._paramValue;
+        servingsView.render();
+        // servingsView._parentEl.querySelector(
+        //     '.recipe__info-data--people'
+        // ).textContent = servingsView._paramValue;
     } catch (err) {
+        recipeView.renderError(err);
     } finally {
         HistoryAPI.setHistory(...HistoryAPI.historyViews);
     }
