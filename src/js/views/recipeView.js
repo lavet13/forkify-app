@@ -29,13 +29,16 @@ class RecipeView {
             </div>
         `;
 
-        const childEl = this._parentEl.querySelector(`.${this._childEl}`);
-        const messageEl = this._parentEl.querySelector(`.${this._message}`);
-        const spinnerEl = this._parentEl.querySelector(`.${this._spinner}`);
+        const childEl = this._parentEl.querySelectorAll(`.${this._childEl}`);
+        const messageEl = this._parentEl.querySelectorAll(`.${this._message}`);
+        const spinnerEl = this._parentEl.querySelectorAll(`.${this._spinner}`);
 
-        childEl && this._parentEl.removeChild(childEl);
-        messageEl && this._parentEl.removeChild(messageEl);
-        spinnerEl && this._parentEl.removeChild(spinnerEl);
+        if (childEl.length !== 0)
+            childEl.forEach(child => this._parentEl.removeChild(child));
+        if (messageEl.length !== 0)
+            messageEl.forEach(child => this._parentEl.removeChild(child));
+        if (spinnerEl.length !== 0)
+            spinnerEl.forEach(child => this._parentEl.removeChild(child));
 
         this._parentEl.insertAdjacentHTML('afterbegin', markup);
     }
@@ -49,13 +52,18 @@ class RecipeView {
             </div>
         `;
 
-        const childEl = this._parentEl.querySelector(`.${this._childEl}`);
-        const messageEl = this._parentEl.querySelector(`.${this._message}`);
-        const errorMessageEl = this._parentEl.querySelector(`.${this._error}`);
+        const childEl = this._parentEl.querySelectorAll(`.${this._childEl}`);
+        const messageEl = this._parentEl.querySelectorAll(`.${this._message}`);
+        const errorMessageEl = this._parentEl.querySelectorAll(
+            `.${this._error}`
+        );
 
-        childEl && this._parentEl.removeChild(childEl);
-        messageEl && this._parentEl.removeChild(messageEl);
-        errorMessageEl && this._parentEl.removeChild(errorMessageEl);
+        if (childEl.length !== 0)
+            childEl.forEach(child => this._parentEl.removeChild(child));
+        if (messageEl.length !== 0)
+            messageEl.forEach(child => this._parentEl.removeChild(child));
+        if (errorMessageEl.length !== 0)
+            errorMessageEl.forEach(child => this._parentEl.removeChild(child));
 
         this._parentEl.insertAdjacentHTML('afterbegin', markup);
     }
@@ -66,7 +74,9 @@ class RecipeView {
 
             this.#generateMarkup();
             this._hiddenMarkup = this._addHiddenClass(this._markup);
-            const spinner = this._parentEl.querySelector(`.${this._spinner}`);
+            const spinner = this._parentEl.querySelectorAll(
+                `.${this._spinner}`
+            );
 
             this._parentEl.insertAdjacentHTML('beforeend', this._hiddenMarkup);
 
@@ -77,7 +87,7 @@ class RecipeView {
                 timeout(TIMEOUT_SEC),
             ]);
 
-            spinner && spinner.remove();
+            if (spinner.length !== 0) spinner.forEach(child => child.remove());
         } catch (err) {
             throw err;
         }
