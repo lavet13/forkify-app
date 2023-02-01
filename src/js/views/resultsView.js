@@ -16,6 +16,10 @@ class ResultsView {
 
     constructor() {}
 
+    getData() {
+        return this.#data;
+    }
+
     renderError(message = this._errorMessage) {
         const markup = `
             <div class="error">
@@ -32,12 +36,9 @@ class ResultsView {
         const messageEl = this._parentEl.querySelectorAll(`.${this._message}`);
         const spinnerEl = this._parentEl.querySelectorAll(`.${this._spinner}`);
 
-        if (childEl.length !== 0)
-            childEl.forEach(child => this._parentEl.removeChild(child));
-        if (messageEl.length !== 0)
-            messageEl.forEach(child => this._parentEl.removeChild(child));
-        if (spinnerEl.length !== 0)
-            spinnerEl.forEach(child => this._parentEl.removeChild(child));
+        if (childEl.length !== 0) childEl.forEach(child => child.remove());
+        if (messageEl.length !== 0) messageEl.forEach(child => child.remove());
+        if (spinnerEl.length !== 0) spinnerEl.forEach(child => child.remove());
 
         this._parentEl.insertAdjacentHTML('afterbegin', markup);
     }
@@ -57,12 +58,10 @@ class ResultsView {
             `.${this._error}`
         );
 
-        if (childEl.length !== 0)
-            childEl.forEach(child => this._parentEl.removeChild(child));
-        if (messageEl.length !== 0)
-            messageEl.forEach(child => this._parentEl.removeChild(child));
+        if (childEl.length !== 0) childEl.forEach(child => child.remove());
+        if (messageEl.length !== 0) messageEl.forEach(child => child.remove());
         if (errorMessageEl.length !== 0)
-            errorMessageEl.forEach(child => this._parentEl.removeChild(child));
+            errorMessageEl.forEach(child => child.remove());
 
         this._parentEl.insertAdjacentHTML('afterbegin', markup);
     }

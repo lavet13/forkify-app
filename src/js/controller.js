@@ -10,6 +10,7 @@ import clickThePagination from './views/clickThePagination';
 import clickTheServings from './views/clickTheServings';
 import servingsView from './views/servingsView';
 import clickTheBookmarkBtn from './views/clickTheBookmarkBtn';
+import bookmarksView from './views/bookmarksView';
 import HistoryAPI from './modules/historyAPI';
 import { timeout } from './helpers';
 import { TIMEOUT_SEC } from './config';
@@ -130,26 +131,35 @@ const controlServings = function (e) {
         const button = e.target.closest('.btn--increase-servings');
         if (!button) return;
 
+        servingsView._paramValue = Number.parseInt(
+            servingsView._parentEl.querySelector(`.recipe__info-data--people`)
+                .textContent
+        );
+
+        if (!Number.isFinite(servingsView._paramValue))
+            throw new Error('Invalid servings');
+
         if (button.querySelector('[href$="#icon-minus-circle"]'))
             servingsView.decreaseServings();
 
         if (button.querySelector('[href$="#icon-plus-circle"]'))
             servingsView.increaseServings();
-        console.log(servingsView._paramValue);
 
-        servingsView.render();
-        // servingsView._parentEl.querySelector(
-        //     '.recipe__info-data--people'
-        // ).textContent = servingsView._paramValue;
+        servingsView._parentEl.querySelector(
+            `.recipe__info-data--people`
+        ).textContent = servingsView._paramValue;
     } catch (err) {
         recipeView.renderError(err);
-    } finally {
-        HistoryAPI.setHistory(...HistoryAPI.historyViews);
     }
 };
 
 const controlBookmarkBtn = function (e) {
     const button = e.target.closest('button.btn--round');
+    if (!button) return;
+
+    const recipe = recipeView.getData();
+    bookmarksView.renderSpinner();
+    bookmarksView.render(recipe);
 };
 
 const controlOnLoad = function () {

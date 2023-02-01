@@ -18,6 +18,10 @@ class RecipeView {
 
     constructor() {}
 
+    getData() {
+        return this.#data;
+    }
+
     renderError(message = this._errorMessage) {
         const markup = `
             <div class="error">
@@ -34,12 +38,9 @@ class RecipeView {
         const messageEl = this._parentEl.querySelectorAll(`.${this._message}`);
         const spinnerEl = this._parentEl.querySelectorAll(`.${this._spinner}`);
 
-        if (childEl.length !== 0)
-            childEl.forEach(child => this._parentEl.removeChild(child));
-        if (messageEl.length !== 0)
-            messageEl.forEach(child => this._parentEl.removeChild(child));
-        if (spinnerEl.length !== 0)
-            spinnerEl.forEach(child => this._parentEl.removeChild(child));
+        if (childEl.length !== 0) childEl.forEach(child => child.remove());
+        if (messageEl.length !== 0) messageEl.forEach(child => child.remove());
+        if (spinnerEl.length !== 0) spinnerEl.forEach(child => child.remove());
 
         this._parentEl.insertAdjacentHTML('afterbegin', markup);
     }
@@ -59,12 +60,10 @@ class RecipeView {
             `.${this._error}`
         );
 
-        if (childEl.length !== 0)
-            childEl.forEach(child => this._parentEl.removeChild(child));
-        if (messageEl.length !== 0)
-            messageEl.forEach(child => this._parentEl.removeChild(child));
+        if (childEl.length !== 0) childEl.forEach(child => child.remove());
+        if (messageEl.length !== 0) messageEl.forEach(child => child.remove());
         if (errorMessageEl.length !== 0)
-            errorMessageEl.forEach(child => this._parentEl.removeChild(child));
+            errorMessageEl.forEach(child => child.remove());
 
         this._parentEl.insertAdjacentHTML('afterbegin', markup);
     }
@@ -112,10 +111,8 @@ class RecipeView {
             title,
         } = this.#data;
 
-        servingsView._paramValue = servings;
-
         this._markup = `
-            <div class="${this._childEl}" data-id="${id}">
+            <div class="${this._childEl}">
                 <figure class="recipe__fig">
                   <img src="${imageUrl}" alt="${title}" class="recipe__img" />
                   <h1 class="recipe__title">
@@ -135,9 +132,7 @@ class RecipeView {
                     <svg class="recipe__info-icon">
                       <use href="${icons}#icon-users"></use>
                     </svg>
-                    <span class="recipe__info-data recipe__info-data--people">${
-                        servingsView._paramValue
-                    }</span>
+                    <span class="recipe__info-data recipe__info-data--people">${servings}</span>
                     <span class="recipe__info-text">servings</span>
 
                     <div class="recipe__info-buttons">
