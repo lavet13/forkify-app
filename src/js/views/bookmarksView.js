@@ -63,15 +63,14 @@ class BookmarksView {
     async render(data) {
         try {
             this.#data = data;
+
+            if (!this.#setLocalStorage()) return;
+
+            this.renderSpinner();
+
             const spinner = this._parentEl.querySelectorAll(
                 `.${this._spinner}`
             );
-
-            if (!this.#setLocalStorage()) {
-                if (spinner.length !== 0)
-                    spinner.forEach(child => child.remove());
-                return;
-            }
 
             this.#generateMarkup();
             this._hiddenMarkup = this._addHiddenClass(this._markup);

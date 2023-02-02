@@ -156,10 +156,8 @@ const controlServings = function (e) {
 
 const controlBookmarkBtn = async function (e) {
     try {
-        const button = e.target.closest('button.btn--round');
-
+        console.log(e.target);
         const recipe = recipeView.getData();
-        bookmarksView.renderSpinner();
         await bookmarksView.render(recipe);
     } catch (err) {
         bookmarksView.renderError(err);
