@@ -47,3 +47,11 @@ export const getSearchResultsPage = function (page) {
 export const getTotalCountPage = function () {
     return Math.trunc(state.search.results / state.search.resultsPerPage);
 };
+
+export const updateServings = function (newServings) {
+    state.recipe.ingredients.forEach(ing => {
+        ing.quantity = (ing.quantity * newServings) / state.recipe.servings;
+    });
+
+    state.recipe.servings = newServings;
+};

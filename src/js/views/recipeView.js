@@ -1,8 +1,8 @@
-import servingsView from './servingsView';
 import icons from '../../img/icons.svg';
 import { timeout, parseHTML } from '../helpers';
 import { TIMEOUT_SEC } from '../config';
 import { Fraction } from 'fractional';
+import clickTheServings from './clickTheServings';
 
 class RecipeView {
     _parentEl = document.querySelector('.recipe');
@@ -110,6 +110,8 @@ class RecipeView {
             sourceUrl,
             title,
         } = this.#data;
+
+        clickTheServings.servings = +servings;
 
         this._markup = `
             <div class="${this._childEl}">

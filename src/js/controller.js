@@ -8,7 +8,6 @@ import resultsView from './views/resultsView';
 import paginationView from './views/paginationView';
 import clickThePagination from './views/clickThePagination';
 import clickTheServings from './views/clickTheServings';
-import servingsView from './views/servingsView';
 import clickTheBookmarkBtn from './views/clickTheBookmarkBtn';
 import bookmarksView from './views/bookmarksView';
 import clickBookmarkRecipe from './views/clickBookmarkRecipe';
@@ -127,28 +126,22 @@ const controlPaginationResults = async function (e) {
     }
 };
 
-const controlServings = function (e) {
+const controlServings = async function (e) {
     try {
         const button = e.target.closest('.btn--increase-servings');
-        if (!button) return;
 
-        servingsView._paramValue = Number.parseInt(
-            servingsView._parentEl.querySelector(`.recipe__info-data--people`)
-                .textContent
-        );
+        const { updateServings } = Model;
+        const query = clickTheServings.getQuery(button);
+        if (!query) return;
 
-        if (!Number.isFinite(servingsView._paramValue))
-            throw new Error('Invalid servings');
+        recipeView.renderSpinner();
+        updateServings(query);
 
-        if (button.querySelector('[href$="#icon-minus-circle"]'))
-            servingsView.decreaseServings();
+        const {
+            state: { recipe },
+        } = Model;
 
-        if (button.querySelector('[href$="#icon-plus-circle"]'))
-            servingsView.increaseServings();
-
-        servingsView._parentEl.querySelector(
-            `.recipe__info-data--people`
-        ).textContent = servingsView._paramValue;
+        await recipeView.render(recipe);
     } catch (err) {
         recipeView.renderError(err);
     }
