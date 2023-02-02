@@ -132,7 +132,6 @@ const controlServings = async function (e) {
 
         const { updateServings } = Model;
         const query = clickTheServings.getQuery(button);
-        if (!query) return;
 
         recipeView.renderSpinner();
         updateServings(query);
