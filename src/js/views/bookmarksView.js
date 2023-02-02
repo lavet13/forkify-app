@@ -60,19 +60,75 @@ class BookmarksView {
         this._parentEl.insertAdjacentHTML('afterbegin', markup);
     }
 
-    render(data) {
-        this.#data = data;
+    async render(data) {
+        try {
+            this.#data = data;
+            const spinner = this._parentEl.querySelectorAll(
+                `.${this._spinner}`
+            );
 
-        this.#generateMarkup();
-        this._hiddenMarkup = this._addHiddenClass(this._markup);
-        const spinner = this._parentEl.querySelectorAll(`.${this._spinner}`);
-        this._parentEl.insertAdjacentHTML('afterbegin', this._hiddenMarkup);
+            if (!this.#setLocalStorage()) {
+                if (spinner.length !== 0)
+                    spinner.forEach(child => child.remove());
+                return;
+            }
 
-        this._parentEl
-            .querySelector(`.${this._childEl}`)
-            .classList.remove('hidden');
+            this.#generateMarkup();
+            this._hiddenMarkup = this._addHiddenClass(this._markup);
+            this._parentEl.insertAdjacentHTML('beforeend', this._hiddenMarkup);
 
-        if (spinner.length !== 0) spinner.forEach(child => child.remove());
+            await Promise.all(
+                this._downloadImages(
+                    Array.from(
+                        this._parentEl.querySelectorAll(`.preview__fig img`)
+                    )
+                )
+            );
+
+            this._parentEl
+                .querySelector(`.${this._childEl}`)
+                .classList.remove('hidden');
+
+            if (spinner.length !== 0) spinner.forEach(child => child.remove());
+        } catch (err) {
+            throw err;
+        }
+    }
+
+    async renderFromLocalStorage() {
+        try {
+            const recipes = JSON.parse(localStorage.getItem('recipes'));
+
+            if (!Array.isArray(recipes) || !(recipes.length !== 0)) {
+                return;
+            }
+
+            this.renderSpinner();
+
+            const spinner = this._parentEl.querySelectorAll(
+                `.${this._spinner}`
+            );
+
+            this.#generateMarkup();
+            this._hiddenMarkup = this._addHiddenClass(this._markup);
+            this._parentEl.insertAdjacentHTML('beforeend', this._hiddenMarkup);
+
+            await Promise.all(
+                this._downloadImages(
+                    Array.from(
+                        this._parentEl.querySelectorAll(`.preview__fig img`)
+                    )
+                )
+            );
+
+            this._parentEl
+                .querySelector(`.${this._childEl}`)
+                .classList.remove('hidden');
+
+            if (spinner.length !== 0) spinner.forEach(child => child.remove());
+        } catch (err) {
+            this.renderError(err);
+        }
     }
 
     _addHiddenClass(markup) {
@@ -81,26 +137,68 @@ class BookmarksView {
         return element.outerHTML;
     }
 
-    #generateMarkup() {
+    #setLocalStorage() {
         const { id, imageUrl, title, publisher } = this.#data;
+
+        if (!localStorage.getItem('recipes')) {
+            const recipes = [{ id, imageUrl, title, publisher }];
+            localStorage.setItem('recipes', JSON.stringify(recipes));
+            return true;
+        }
+
+        if (localStorage.getItem('recipes')) {
+            const recipes = JSON.parse(localStorage.getItem('recipes'));
+
+            if (!recipes.some(({ id: idRecipe }) => idRecipe === id)) {
+                recipes.push({ id, imageUrl, title, publisher });
+                localStorage.setItem('recipes', JSON.stringify(recipes));
+                return true;
+            }
+
+            return false;
+        }
+    }
+
+    #generateMarkup() {
+        const recipes = JSON.parse(localStorage.getItem('recipes'));
 
         this._markup = `
             <ul class="${this._childEl}">
-                <li class="preview">
-                    <a class="preview__link" href="?id=${id}">
-                        <figure class="preview__fig">
-                            <img src="${imageUrl}" alt="${title}" />
-                        </figure>
-                        <div class="preview__data">
-                            <h4 class="preview__name">
-                                ${title}
-                            </h4>
-                            <p class="preview__publisher">${publisher}</p>
-                        </div>
-                    </a>
-                </li>
+                ${recipes
+                    .map(
+                        ({ id, imageUrl, title, publisher }) => `
+                        <li class="preview">
+                            <a class="preview__link" href="?id=${id}">
+                                <figure class="preview__fig">
+                                    <img src="${imageUrl}" alt="${title}" />
+                                </figure>
+                                <div class="preview__data">
+                                    <h4 class="preview__name">
+                                        ${title}
+                                    </h4>
+                                    <p class="preview__publisher">${publisher}</p>
+                                </div>
+                            </a>
+                        </li>`
+                    )
+                    .join('')}
             </ul>
         `;
+    }
+
+    _downloadImages(images) {
+        return images.map(
+            image =>
+                new Promise((resolve, reject) => {
+                    image.addEventListener('load', () => {
+                        resolve(image);
+                    });
+
+                    image.addEventListener('error', () => {
+                        reject(new Error('Cannot download the image'));
+                    });
+                })
+        );
     }
 }
 

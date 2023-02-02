@@ -11,6 +11,7 @@ import clickTheServings from './views/clickTheServings';
 import servingsView from './views/servingsView';
 import clickTheBookmarkBtn from './views/clickTheBookmarkBtn';
 import bookmarksView from './views/bookmarksView';
+import clickBookmarkRecipe from './views/clickBookmarkRecipe';
 import HistoryAPI from './modules/historyAPI';
 import { timeout } from './helpers';
 import { TIMEOUT_SEC } from './config';
@@ -153,16 +154,48 @@ const controlServings = function (e) {
     }
 };
 
-const controlBookmarkBtn = function (e) {
-    const button = e.target.closest('button.btn--round');
-    if (!button) return;
+const controlBookmarkBtn = async function (e) {
+    try {
+        const button = e.target.closest('button.btn--round');
 
-    const recipe = recipeView.getData();
-    bookmarksView.renderSpinner();
-    bookmarksView.render(recipe);
+        const recipe = recipeView.getData();
+        bookmarksView.renderSpinner();
+        await bookmarksView.render(recipe);
+    } catch (err) {
+        bookmarksView.renderError(err);
+    }
+};
+
+const controlBookmarkRecipe = async function (e) {
+    try {
+        const query = clickBookmarkRecipe.getQuery(e.target);
+        if (!query) return;
+
+        clickTheRecipe._paramValue = decodeURIComponent(query);
+        recipeView.renderSpinner();
+
+        HistoryAPI.setURL(clickTheRecipe._param, clickTheRecipe._paramValue);
+
+        const { loadRecipe } = Model;
+
+        await loadRecipe(clickTheRecipe._paramValue);
+
+        const {
+            state: { recipe },
+        } = Model;
+
+        await recipeView.render(recipe);
+    } catch (err) {
+        recipeView.renderError(err);
+    } finally {
+        HistoryAPI.setHistory(...HistoryAPI.historyViews);
+    }
 };
 
 const controlOnLoad = function () {
+    // BOOKMARK
+    bookmarksView.renderFromLocalStorage();
+
     const { searchParams } = new URL(window.location);
     if ([...searchParams.entries()].length === 0) return;
     searchParams.forEach(async (query, param) => {
@@ -382,6 +415,8 @@ const init = function () {
     clickThePagination.addHandlerRender(controlPaginationResults);
     clickTheServings.addHandlerRender(controlServings);
     clickTheBookmarkBtn.addHandlerRender(controlBookmarkBtn);
+    clickBookmarkRecipe.addHandlerRender(controlBookmarkRecipe);
+
     HistoryAPI.addHandlerOnLoad(controlOnLoad);
     HistoryAPI.addHandlerOnPopState(controlOnPopState);
 };
