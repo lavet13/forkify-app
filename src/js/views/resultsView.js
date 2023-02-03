@@ -99,29 +99,7 @@ class ResultsView {
         }
     }
 
-    update(data) {
-        this.#data = data;
-
-        this._newMarkup = this.#generateMarkup();
-
-        const newElements = Array.from(
-            document
-                .createRange()
-                .createContextualFragment(this._newMarkup)
-                .querySelectorAll('*')
-        );
-
-        const curElements = this._parentEl.querySelectorAll('*');
-
-        newElements.forEach((newEl, i) => {
-            const curEl = curElements[i];
-
-            if (!newEl.isEqualNode(curEl)) {
-                for (const attr of Array.from(newEl.attributes)) {
-                }
-            }
-        });
-    }
+    update(data) {}
 
     _addHiddenClass(markup) {
         const element = parseHTML(markup).querySelector(`.${this._childEl}`);
