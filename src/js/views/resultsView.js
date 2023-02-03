@@ -10,6 +10,7 @@ class ResultsView {
     _error = 'error';
     _errorMessage = `No such recipes to be found!`;
     _markup = ``;
+    _newMarkup = ``;
     _hiddenMarkup = ``;
     _id = 'dbabfec5-dcc0-127a-24a0-22e42cbd7441';
     #data;
@@ -72,7 +73,7 @@ class ResultsView {
 
             if (this.#data.length === 0) throw new Error(this._errorMessage);
 
-            this.#generateMarkup();
+            this._markup = this.#generateMarkup();
             this._hiddenMarkup = this._addHiddenClass(this._markup);
             const spinner = this._parentEl.querySelectorAll(
                 `.${this._spinner}`
@@ -98,6 +99,30 @@ class ResultsView {
         }
     }
 
+    update(data) {
+        this.#data = data;
+
+        this._newMarkup = this.#generateMarkup();
+
+        const newElements = Array.from(
+            document
+                .createRange()
+                .createContextualFragment(this._newMarkup)
+                .querySelectorAll('*')
+        );
+
+        const curElements = this._parentEl.querySelectorAll('*');
+
+        newElements.forEach((newEl, i) => {
+            const curEl = curElements[i];
+
+            if (!newEl.isEqualNode(curEl)) {
+                for (const attr of Array.from(newEl.attributes)) {
+                }
+            }
+        });
+    }
+
     _addHiddenClass(markup) {
         const element = parseHTML(markup).querySelector(`.${this._childEl}`);
         element.classList.add('hidden');
@@ -120,7 +145,10 @@ class ResultsView {
     }
 
     #generateMarkup() {
-        this._markup = `
+        const { searchParams } = new URL(window.location);
+        const idFromURL = searchParams.get('id');
+
+        return `
             <ul class="${this._childEl}">
             ${this.#data
                 .map(
@@ -128,7 +156,9 @@ class ResultsView {
                         `
                     <li class="preview">
                         <a
-                            class="preview__link preview__link--active"
+                            class="preview__link ${
+                                id === idFromURL ? 'preview__link--active' : ''
+                            }"
                             href="?id=${id}"
                         >
                             <figure class="preview__fig">

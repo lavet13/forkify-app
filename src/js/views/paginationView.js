@@ -9,6 +9,7 @@ class PaginationView {
     _error = 'error';
     _errorMessage = `Something went wrong with buttons :(`;
     _markup = ``;
+    _newMarkup = ``;
     _hiddenMarkup = ``;
     _id = 'ac1f4d84-3402-f04d-c36d-1ea3761e8018';
     #data;
@@ -70,7 +71,7 @@ class PaginationView {
         try {
             this.#data = data;
 
-            this.#generateMarkup();
+            this._markup = this.#generateMarkup();
             this._hiddenMarkup = this._addHiddenClass(this._markup);
             const spinner = this._parentEl.querySelectorAll(
                 `.${this._spinner}`
@@ -99,7 +100,7 @@ class PaginationView {
         console.log(`pageNumber = ${pageNumber}`);
         console.log(`totalPageCount = ${totalPageCount}`);
 
-        this._markup = `
+        return `
         <div class="${this._childEl}">
             ${
                 pageNumber > 1

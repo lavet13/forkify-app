@@ -12,6 +12,7 @@ class RecipeView {
     _error = 'error';
     _errorMessage = `recipe 😐`;
     _markup = ``;
+    _newMarkup = ``;
     _hiddenMarkup = ``;
     _id = 'b9919acb-5223-330a-2f98-02cd1ed5a288';
     #data;
@@ -72,7 +73,7 @@ class RecipeView {
         try {
             this.#data = data;
 
-            this.#generateMarkup();
+            this._markup = this.#generateMarkup();
             this._hiddenMarkup = this._addHiddenClass(this._markup);
             const spinner = this._parentEl.querySelectorAll(
                 `.${this._spinner}`
@@ -91,6 +92,34 @@ class RecipeView {
         } catch (err) {
             throw err;
         }
+    }
+
+    update(data) {
+        this.#data = data;
+
+        this._newMarkup = this.#generateMarkup();
+
+        // New DOM here will become like a big object which is like a virtual DOM
+        const newElements = Array.from(
+            document
+                .createRange()
+                .createContextualFragment(this._newMarkup)
+                .querySelectorAll('*')
+        );
+
+        const curElements = this._parentEl.querySelectorAll('*');
+
+        newElements.forEach((newEl, i) => {
+            const curEl = curElements[i];
+
+            if (
+                !newEl.isEqualNode(curEl) &&
+                newEl.firstChild?.nodeValue.trim() !== ''
+            ) {
+                console.log(newEl.firstChild?.nodeValue.trim());
+                curEl.textContent = newEl.textContent;
+            }
+        });
     }
 
     _addHiddenClass(markup) {
@@ -113,7 +142,7 @@ class RecipeView {
 
         clickTheServings.servings = +servings;
 
-        this._markup = `
+        return `
             <div class="${this._childEl}">
                 <figure class="recipe__fig">
                   <img src="${imageUrl}" alt="${title}" class="recipe__img" />

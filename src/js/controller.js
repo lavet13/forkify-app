@@ -27,6 +27,11 @@ const controlRecipe = async function (e) {
 
         HistoryAPI.setURL(clickTheRecipe._param, clickTheRecipe._paramValue);
 
+        const { getSearchResultsPage } = Model;
+        resultsView.update(
+            getSearchResultsPage(clickThePagination._paramValue)
+        );
+
         const { loadRecipe } = Model;
 
         await loadRecipe(clickTheRecipe._paramValue);
@@ -132,15 +137,19 @@ const controlServings = async function (e) {
 
         const { updateServings } = Model;
         const query = clickTheServings.getQuery(button);
+        if (query < 1) {
+            clickTheServings.servings++;
+            return;
+        }
 
-        recipeView.renderSpinner();
         updateServings(query);
 
         const {
             state: { recipe },
         } = Model;
 
-        await recipeView.render(recipe);
+        // await recipeView.render(recipe);
+        recipeView.update(recipe);
     } catch (err) {
         recipeView.renderError(err);
     }

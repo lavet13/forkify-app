@@ -9,6 +9,7 @@ class BookmarksView {
     _error = 'error';
     _errorMessage = `recipe 😐`;
     _markup = ``;
+    _newMarkup = ``;
     _hiddenMarkup = ``;
     #data;
 
@@ -72,7 +73,7 @@ class BookmarksView {
                 `.${this._spinner}`
             );
 
-            this.#generateMarkup();
+            this._markup = this.#generateMarkup();
             this._hiddenMarkup = this._addHiddenClass(this._markup);
             this._parentEl.insertAdjacentHTML('beforeend', this._hiddenMarkup);
 
@@ -161,7 +162,7 @@ class BookmarksView {
     #generateMarkup() {
         const recipes = JSON.parse(localStorage.getItem('recipes'));
 
-        this._markup = `
+        return `
             <ul class="${this._childEl}">
                 ${recipes
                     .map(
