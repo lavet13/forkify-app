@@ -109,7 +109,7 @@ class BookmarksView {
                 `.${this._spinner}`
             );
 
-            this.#generateMarkup();
+            this._markup = this.#generateMarkup();
             this._hiddenMarkup = this._addHiddenClass(this._markup);
             this._parentEl.insertAdjacentHTML('beforeend', this._hiddenMarkup);
 
@@ -127,6 +127,7 @@ class BookmarksView {
 
             if (spinner.length !== 0) spinner.forEach(child => child.remove());
         } catch (err) {
+            console.error(err);
             this.renderError(err);
         }
     }

@@ -27,7 +27,19 @@ const controlRecipe = async function (e) {
 
         HistoryAPI.setURL(clickTheRecipe._param, clickTheRecipe._paramValue);
 
-        resultsView.update();
+        const {
+            getSearchResultsPage,
+            state: {
+                search: { recipes },
+            },
+        } = Model;
+
+        resultsView.update(
+            clickThePagination._paramValue
+                ? getSearchResultsPage(clickThePagination._paramValue)
+                : recipes
+        );
+
         const { loadRecipe } = Model;
 
         await loadRecipe(clickTheRecipe._paramValue);
