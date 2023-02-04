@@ -417,12 +417,12 @@ const controlOnPopState = function (e) {
 };
 
 const init = function () {
-    clickTheRecipe.addHandlerRender(controlRecipe);
+    clickTheRecipe.addHandlerRender(controlRecipe); // resultsView
     searchView.addHandlerRender(controlSearchResults);
-    clickThePagination.addHandlerRender(controlPaginationResults);
-    clickTheServings.addHandlerRender(controlServings);
-    clickTheBookmarkBtn.addHandlerRender(controlBookmarkBtn);
-    clickBookmarkRecipe.addHandlerRender(controlBookmarkRecipe);
+    clickThePagination.addHandlerRender(controlPaginationResults); // paginationView
+    clickTheServings.addHandlerRender(controlServings); // recipeView
+    clickTheBookmarkBtn.addHandlerRender(controlBookmarkBtn); // recipeView
+    clickBookmarkRecipe.addHandlerRender(controlBookmarkRecipe); // bookmarksView
 
     HistoryAPI.addHandlerOnLoad(controlOnLoad);
     HistoryAPI.addHandlerOnPopState(controlOnPopState);
