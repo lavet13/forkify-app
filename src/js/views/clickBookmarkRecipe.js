@@ -14,7 +14,7 @@ class ClickBookmarkRecipe {
         this._parentEl.addEventListener('click', e => {
             e.preventDefault();
 
-            if (e.target.closest('.preview__link')) handler.call(this, e);
+            e.target.closest('.preview__link') && handler.call(this, e);
         });
     }
 }

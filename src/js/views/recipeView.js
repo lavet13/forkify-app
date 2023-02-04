@@ -1,6 +1,5 @@
 import icons from '../../img/icons.svg';
-import { timeout, parseHTML } from '../helpers';
-import { TIMEOUT_SEC } from '../config';
+import { parseHTML } from '../helpers';
 import { Fraction } from 'fractional';
 import clickTheServings from './clickTheServings';
 
@@ -71,6 +70,12 @@ class RecipeView {
 
     async render(data) {
         try {
+            const childEl = this._parentEl.querySelectorAll(
+                `.${this._childEl}`
+            );
+
+            childEl.length !== 0 && childEl.forEach(child => child.remove());
+
             this.#data = data;
 
             this._markup = this.#generateMarkup();
@@ -81,12 +86,27 @@ class RecipeView {
 
             this._parentEl.insertAdjacentHTML('beforeend', this._hiddenMarkup);
 
-            await Promise.race([
-                this._downloadImage(
-                    this._parentEl.querySelector(`.recipe__img`)
-                ),
-                timeout(TIMEOUT_SEC),
-            ]);
+            const recipes = JSON.parse(localStorage.getItem('recipes'));
+            const { searchParams } = new URL(window.location);
+
+            if (recipes)
+                for (const recipe of recipes) {
+                    if (recipe.id === searchParams.get('id')) {
+                        const use =
+                            this._parentEl.querySelector('.btn--round use');
+                        if (!use)
+                            throw new Error('cannot find button bookmark >//<');
+
+                        Array.from(
+                            use.attributes
+                        )[0].value = `${icons}#icon-bookmark-fill`;
+                        break;
+                    }
+                }
+
+            await this._downloadImage(
+                this._parentEl.querySelector(`.recipe__img`)
+            );
 
             if (spinner.length !== 0) spinner.forEach(child => child.remove());
         } catch (err) {
@@ -120,6 +140,13 @@ class RecipeView {
                 curEl.textContent = newEl.textContent;
             }
         });
+    }
+
+    updateBookmarkBtn(target) {
+        const use = target.closest('.btn--round')?.querySelector('use');
+        if (!use) return;
+
+        Array.from(use.attributes)[0].value = `${icons}#icon-bookmark-fill`;
     }
 
     _addHiddenClass(markup) {
@@ -187,7 +214,7 @@ class RecipeView {
                   </div>
                   <button class="btn--round">
                     <svg class="">
-                      <use href="${icons}#icon-bookmark-fill"></use>
+                      <use href="${icons}#icon-bookmark"></use>
                     </svg>
                   </button>
                 </div>

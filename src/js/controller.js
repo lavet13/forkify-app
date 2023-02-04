@@ -145,6 +145,7 @@ const controlServings = async function (e) {
 
         const { updateServings } = Model;
         const query = clickTheServings.getQuery(button);
+
         if (query < 1) {
             clickTheServings.servings++;
             return;
@@ -165,7 +166,8 @@ const controlServings = async function (e) {
 
 const controlBookmarkBtn = async function (e) {
     try {
-        console.log(e.target);
+        recipeView.updateBookmarkBtn(e.target);
+
         const recipe = recipeView.getData();
         await bookmarksView.render(recipe);
     } catch (err) {
@@ -417,12 +419,12 @@ const controlOnPopState = function (e) {
 };
 
 const init = function () {
-    clickTheRecipe.addHandlerRender(controlRecipe); // resultsView
+    clickTheRecipe.addHandlerRender(controlRecipe);
     searchView.addHandlerRender(controlSearchResults);
-    clickThePagination.addHandlerRender(controlPaginationResults); // paginationView
-    clickTheServings.addHandlerRender(controlServings); // recipeView
-    clickTheBookmarkBtn.addHandlerRender(controlBookmarkBtn); // recipeView
-    clickBookmarkRecipe.addHandlerRender(controlBookmarkRecipe); // bookmarksView
+    clickThePagination.addHandlerRender(controlPaginationResults);
+    clickTheServings.addHandlerRender(controlServings);
+    clickTheBookmarkBtn.addHandlerRender(controlBookmarkBtn);
+    clickBookmarkRecipe.addHandlerRender(controlBookmarkRecipe);
 
     HistoryAPI.addHandlerOnLoad(controlOnLoad);
     HistoryAPI.addHandlerOnPopState(controlOnPopState);

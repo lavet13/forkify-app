@@ -70,6 +70,12 @@ class ResultsView {
 
     async render(data) {
         try {
+            const childEl = this._parentEl.querySelectorAll(
+                `.${this._childEl}`
+            );
+
+            childEl.length !== 0 && childEl.forEach(child => child.remove());
+
             this.#data = data;
 
             if (this.#data.length === 0) throw new Error(this._errorMessage);

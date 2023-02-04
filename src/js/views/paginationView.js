@@ -69,6 +69,12 @@ class PaginationView {
 
     render(data) {
         try {
+            const childEl = this._parentEl.querySelectorAll(
+                `.${this._childEl}`
+            );
+
+            childEl.length !== 0 && childEl.forEach(child => child.remove());
+
             this.#data = data;
 
             this._markup = this.#generateMarkup();

@@ -19,7 +19,7 @@ class ClickTheServings {
         this._parentEl.addEventListener('click', e => {
             e.preventDefault();
 
-            if (e.target.closest('.btn--increase-servings'))
+            e.target.closest('.btn--increase-servings') &&
                 handler.call(this, e);
         });
     }

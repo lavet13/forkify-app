@@ -67,6 +67,12 @@ class BookmarksView {
 
             if (!this.#setLocalStorage()) return;
 
+            const childEl = this._parentEl.querySelectorAll(
+                `.${this._childEl}`
+            );
+
+            childEl.length !== 0 && childEl.forEach(child => child.remove());
+
             this.renderSpinner();
 
             const spinner = this._parentEl.querySelectorAll(
