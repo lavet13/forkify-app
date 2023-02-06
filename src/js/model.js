@@ -4,8 +4,6 @@ import { getJSON, getValidProperties } from './helpers';
 export const state = {
     recipe: {},
     search: {},
-    bookmarks: [],
-    serving: 1,
 };
 
 // business logic
