@@ -166,10 +166,41 @@ const controlServings = async function (e) {
 
 const controlBookmarkBtn = async function (e) {
     try {
-        recipeView.updateBookmarkBtn(e.target);
+        const { searchParams } = new URL(window.location);
+        const isBookmarkExist = JSON.parse(
+            localStorage.getItem('recipes')
+        )?.some(recipe => recipe.id === searchParams.get('id'));
 
+        if (
+            isBookmarkExist &&
+            localStorage.getItem('recipes') &&
+            JSON.parse(localStorage.getItem('recipes')).length !== 0
+        ) {
+            recipeView.unfillBookmarkBtn(e.target);
+
+            const localStorageRecipes = JSON.parse(
+                localStorage.getItem('recipes')
+            );
+
+            const deletedRecipe = localStorageRecipes.filter(
+                recipe => recipe.id !== searchParams.get('id')
+            );
+
+            localStorage.setItem('recipes', JSON.stringify(deletedRecipe));
+
+            if (JSON.parse(localStorage.getItem('recipes')).length === 0) {
+                bookmarksView.renderMessage();
+                return;
+            }
+
+            await bookmarksView.render();
+            return;
+        }
+
+        recipeView.fillBookmarkBtn(e.target);
         const recipe = recipeView.getData();
-        await bookmarksView.render(recipe);
+        if (!bookmarksView._setLocalStorage(recipe)) return;
+        await bookmarksView.render();
     } catch (err) {
         bookmarksView.renderError(err);
     }

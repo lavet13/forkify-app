@@ -89,7 +89,7 @@ class RecipeView {
             const recipes = JSON.parse(localStorage.getItem('recipes'));
             const { searchParams } = new URL(window.location);
 
-            if (recipes)
+            if (Array.isArray(recipes) && recipes.length !== 0)
                 for (const recipe of recipes) {
                     if (recipe.id === searchParams.get('id')) {
                         const use =
@@ -142,11 +142,18 @@ class RecipeView {
         });
     }
 
-    updateBookmarkBtn(target) {
+    fillBookmarkBtn(target) {
         const use = target.closest('.btn--round')?.querySelector('use');
         if (!use) return;
 
         Array.from(use.attributes)[0].value = `${icons}#icon-bookmark-fill`;
+    }
+
+    unfillBookmarkBtn(target) {
+        const use = target.closest('.btn--round')?.querySelector('use');
+        if (!use) return;
+
+        Array.from(use.attributes)[0].value = `${icons}#icon-bookmark`;
     }
 
     _addHiddenClass(markup) {

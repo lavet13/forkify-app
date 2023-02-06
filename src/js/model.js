@@ -4,7 +4,6 @@ import { getJSON, getValidProperties } from './helpers';
 export const state = {
     recipe: {},
     search: {},
-    bookmarks: [],
 };
 
 // business logic
@@ -59,5 +58,6 @@ export const updateServings = function (newServings) {
 
 export const addBookmark = function (recipe) {
     state.bookmarks.push(recipe);
-    recipe.id === state.recipe.id && (state.recipe.bookmarked = true);
+
+    if (state.recipe.id === recipe.id) state.recipe.bookmarked = true;
 };

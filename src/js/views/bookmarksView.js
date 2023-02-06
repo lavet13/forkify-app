@@ -8,12 +8,40 @@ class BookmarksView {
     _message = 'message';
     _error = 'error';
     _errorMessage = `recipe 😐`;
+    _messageText = `No bookmarks yet. Find a nice recipe and bookmark it :)`;
     _markup = ``;
     _newMarkup = ``;
     _hiddenMarkup = ``;
     #data;
 
     constructor() {}
+
+    renderMessage(message = this._messageText) {
+        const markup = `
+            <div class="message">
+                <div>
+                    <svg>
+                        <use
+                            href="${icons}#icon-smile"
+                        ></use>
+                    </svg>
+                </div>
+                <p>
+                    ${message}
+                </p>
+            </div>
+        `;
+
+        const childEl = this._parentEl.querySelectorAll(`.${this._childEl}`);
+        const errorEl = this._parentEl.querySelectorAll(`.${this._error}`);
+        const spinnerEl = this._parentEl.querySelectorAll(`.${this._spinner}`);
+
+        if (childEl.length !== 0) childEl.forEach(child => child.remove());
+        if (errorEl.length !== 0) errorEl.forEach(child => child.remove());
+        if (spinnerEl.length !== 0) spinnerEl.forEach(child => child.remove());
+
+        this._parentEl.insertAdjacentHTML('afterbegin', markup);
+    }
 
     renderError(message = this._errorMessage) {
         const markup = `
@@ -61,12 +89,8 @@ class BookmarksView {
         this._parentEl.insertAdjacentHTML('afterbegin', markup);
     }
 
-    async render(data) {
+    async render() {
         try {
-            this.#data = data;
-
-            if (!this.#setLocalStorage()) return;
-
             const childEl = this._parentEl.querySelectorAll(
                 `.${this._childEl}`
             );
@@ -144,8 +168,8 @@ class BookmarksView {
         return element.outerHTML;
     }
 
-    #setLocalStorage() {
-        const { id, imageUrl, title, publisher } = this.#data;
+    _setLocalStorage(recipe) {
+        const { id, imageUrl, title, publisher } = recipe;
 
         if (!localStorage.getItem('recipes')) {
             const recipes = [{ id, imageUrl, title, publisher }];
