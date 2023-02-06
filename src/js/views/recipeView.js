@@ -90,22 +90,24 @@ class RecipeView {
 
         this._newMarkup = this.#generateMarkup();
 
-        const newDom = Array.from(
+        // New DOM here will become like a big object which is like a virtual DOM
+        const newElements = Array.from(
             document
                 .createRange()
                 .createContextualFragment(this._newMarkup)
                 .querySelectorAll('*')
         );
 
-        const curDom = this._parentEl.querySelectorAll('*');
+        const curElements = this._parentEl.querySelectorAll('*');
 
-        newDom.forEach((newEl, i) => {
-            const curEl = curDom[i];
+        newElements.forEach((newEl, i) => {
+            const curEl = curElements[i];
 
             if (
                 !newEl.isEqualNode(curEl) &&
                 newEl.firstChild?.nodeValue.trim() !== ''
             ) {
+                console.log(newEl.firstChild?.nodeValue.trim());
                 curEl.textContent = newEl.textContent;
             }
 
@@ -115,6 +117,20 @@ class RecipeView {
                 );
             }
         });
+    }
+
+    fillBookmarkBtn(target) {
+        const use = target.closest('.btn--round')?.querySelector('use');
+        if (!use) return;
+
+        Array.from(use.attributes)[0].value = `${icons}#icon-bookmark-fill`;
+    }
+
+    unfillBookmarkBtn(target) {
+        const use = target.closest('.btn--round')?.querySelector('use');
+        if (!use) return;
+
+        Array.from(use.attributes)[0].value = `${icons}#icon-bookmark`;
     }
 
     _addHiddenClass(markup) {
@@ -135,7 +151,7 @@ class RecipeView {
             title,
         } = this.#data;
 
-        clickTheServings.paramValue = servings;
+        clickTheServings.servings = +servings;
 
         return `
             <div class="${this._childEl}">

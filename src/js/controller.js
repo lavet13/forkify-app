@@ -360,6 +360,9 @@ const controlOnPopState = function (e) {
 const init = function () {
     clickTheRecipe.addHandlerRender(controlRecipe);
     clickTheServings.addHandlerRender(controlServings);
+    searchView.addHandlerRender(controlSearchResults);
+    clickThePagination.addHandlerRender(controlPaginationResults);
+    clickTheServings.addHandlerRender(controlServings);
     clickTheBookmarkBtn.addHandlerRender(controlBookmarkBtn);
     searchView.addHandlerRender(controlSearchResults);
     clickThePagination.addHandlerRender(controlPaginationResults);
