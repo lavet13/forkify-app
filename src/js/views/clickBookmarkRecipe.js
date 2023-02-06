@@ -1,7 +1,5 @@
-class ClickTheRecipe {
-    _parentEl = document.querySelector('.search-results');
-    _param = 'id';
-    _paramValue;
+class ClickBookmarkRecipe {
+    _parentEl = document.querySelector('.bookmarks');
 
     constructor() {}
 
@@ -21,4 +19,4 @@ class ClickTheRecipe {
     }
 }
 
-export default new ClickTheRecipe();
+export default new ClickBookmarkRecipe();

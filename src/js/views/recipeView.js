@@ -1,6 +1,5 @@
 import icons from '../../img/icons.svg';
-import { timeout, parseHTML } from '../helpers';
-import { TIMEOUT_SEC } from '../config';
+import { parseHTML } from '../helpers';
 import { Fraction } from 'fractional';
 import clickTheServings from './clickTheServings';
 
@@ -19,6 +18,10 @@ class RecipeView {
 
     constructor() {}
 
+    getData() {
+        return this.#data;
+    }
+
     renderError(message = this._errorMessage) {
         const markup = `
             <div class="error">
@@ -31,13 +34,13 @@ class RecipeView {
             </div>
         `;
 
-        const childEl = this._parentEl.querySelector(`.${this._childEl}`);
-        const messageEl = this._parentEl.querySelector(`.${this._message}`);
-        const spinnerEl = this._parentEl.querySelector(`.${this._spinner}`);
+        const childEl = this._parentEl.querySelectorAll(`.${this._childEl}`);
+        const messageEl = this._parentEl.querySelectorAll(`.${this._message}`);
+        const spinnerEl = this._parentEl.querySelectorAll(`.${this._spinner}`);
 
-        childEl && this._parentEl.removeChild(childEl);
-        messageEl && this._parentEl.removeChild(messageEl);
-        spinnerEl && this._parentEl.removeChild(spinnerEl);
+        if (childEl.length !== 0) childEl.forEach(child => child.remove());
+        if (messageEl.length !== 0) messageEl.forEach(child => child.remove());
+        if (spinnerEl.length !== 0) spinnerEl.forEach(child => child.remove());
 
         this._parentEl.insertAdjacentHTML('afterbegin', markup);
     }
@@ -51,35 +54,61 @@ class RecipeView {
             </div>
         `;
 
-        const childEl = this._parentEl.querySelector(`.${this._childEl}`);
-        const messageEl = this._parentEl.querySelector(`.${this._message}`);
-        const errorMessageEl = this._parentEl.querySelector(`.${this._error}`);
+        const childEl = this._parentEl.querySelectorAll(`.${this._childEl}`);
+        const messageEl = this._parentEl.querySelectorAll(`.${this._message}`);
+        const errorMessageEl = this._parentEl.querySelectorAll(
+            `.${this._error}`
+        );
 
-        childEl && this._parentEl.removeChild(childEl);
-        messageEl && this._parentEl.removeChild(messageEl);
-        errorMessageEl && this._parentEl.removeChild(errorMessageEl);
+        if (childEl.length !== 0) childEl.forEach(child => child.remove());
+        if (messageEl.length !== 0) messageEl.forEach(child => child.remove());
+        if (errorMessageEl.length !== 0)
+            errorMessageEl.forEach(child => child.remove());
 
         this._parentEl.insertAdjacentHTML('afterbegin', markup);
     }
 
     async render(data) {
         try {
+            const childEl = this._parentEl.querySelectorAll(
+                `.${this._childEl}`
+            );
+
+            childEl.length !== 0 && childEl.forEach(child => child.remove());
+
             this.#data = data;
 
             this._markup = this.#generateMarkup();
             this._hiddenMarkup = this._addHiddenClass(this._markup);
-            const spinner = this._parentEl.querySelector(`.${this._spinner}`);
+            const spinner = this._parentEl.querySelectorAll(
+                `.${this._spinner}`
+            );
 
             this._parentEl.insertAdjacentHTML('beforeend', this._hiddenMarkup);
 
-            await Promise.race([
-                this._downloadImage(
-                    this._parentEl.querySelector(`.recipe__img`)
-                ),
-                timeout(TIMEOUT_SEC),
-            ]);
+            const recipes = JSON.parse(localStorage.getItem('recipes'));
+            const { searchParams } = new URL(window.location);
 
-            spinner && spinner.remove();
+            if (Array.isArray(recipes) && recipes.length !== 0)
+                for (const recipe of recipes) {
+                    if (recipe.id === searchParams.get('id')) {
+                        const use =
+                            this._parentEl.querySelector('.btn--round use');
+                        if (!use)
+                            throw new Error('cannot find button bookmark >//<');
+
+                        Array.from(
+                            use.attributes
+                        )[0].value = `${icons}#icon-bookmark-fill`;
+                        break;
+                    }
+                }
+
+            await this._downloadImage(
+                this._parentEl.querySelector(`.recipe__img`)
+            );
+
+            if (spinner.length !== 0) spinner.forEach(child => child.remove());
         } catch (err) {
             throw err;
         }
@@ -90,31 +119,41 @@ class RecipeView {
 
         this._newMarkup = this.#generateMarkup();
 
-        const newDom = Array.from(
+        // New DOM here will become like a big object which is like a virtual DOM
+        const newElements = Array.from(
             document
                 .createRange()
                 .createContextualFragment(this._newMarkup)
                 .querySelectorAll('*')
         );
 
-        const curDom = this._parentEl.querySelectorAll('*');
+        const curElements = this._parentEl.querySelectorAll('*');
 
-        newDom.forEach((newEl, i) => {
-            const curEl = curDom[i];
+        newElements.forEach((newEl, i) => {
+            const curEl = curElements[i];
 
             if (
                 !newEl.isEqualNode(curEl) &&
                 newEl.firstChild?.nodeValue.trim() !== ''
             ) {
+                console.log(newEl.firstChild?.nodeValue.trim());
                 curEl.textContent = newEl.textContent;
             }
-
-            if (!newEl.isEqualNode(curEl)) {
-                Array.from(newEl.attributes).forEach(attr =>
-                    curEl.setAttribute(attr.name, attr.value)
-                );
-            }
         });
+    }
+
+    fillBookmarkBtn(target) {
+        const use = target.closest('.btn--round')?.querySelector('use');
+        if (!use) return;
+
+        Array.from(use.attributes)[0].value = `${icons}#icon-bookmark-fill`;
+    }
+
+    unfillBookmarkBtn(target) {
+        const use = target.closest('.btn--round')?.querySelector('use');
+        if (!use) return;
+
+        Array.from(use.attributes)[0].value = `${icons}#icon-bookmark`;
     }
 
     _addHiddenClass(markup) {
@@ -135,7 +174,7 @@ class RecipeView {
             title,
         } = this.#data;
 
-        clickTheServings.paramValue = servings;
+        clickTheServings.servings = +servings;
 
         return `
             <div class="${this._childEl}">
@@ -182,7 +221,7 @@ class RecipeView {
                   </div>
                   <button class="btn--round">
                     <svg class="">
-                      <use href="${icons}#icon-bookmark-fill"></use>
+                      <use href="${icons}#icon-bookmark"></use>
                     </svg>
                   </button>
                 </div>
