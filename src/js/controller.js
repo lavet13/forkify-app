@@ -10,8 +10,6 @@ import clickThePagination from './views/clickThePagination';
 import clickTheBookmarkBtn from './views/clickTheBookmarkBtn';
 import clickTheServings from './views/clickTheServings';
 import clickTheBookmarkBtn from './views/clickTheBookmarkBtn';
-import bookmarksView from './views/bookmarksView';
-import clickBookmarkRecipe from './views/clickBookmarkRecipe';
 import HistoryAPI from './modules/historyAPI';
 import { timeout } from './helpers';
 import { TIMEOUT_SEC } from './config';
