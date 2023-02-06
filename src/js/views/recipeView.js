@@ -119,43 +119,37 @@ class RecipeView {
 
         this._newMarkup = this.#generateMarkup();
 
-        // New DOM here will become like a big object which is like a virtual DOM
-        const newElements = Array.from(
+
+        const newDom = Array.from(
+
             document
                 .createRange()
                 .createContextualFragment(this._newMarkup)
                 .querySelectorAll('*')
         );
 
-        const curElements = this._parentEl.querySelectorAll('*');
 
-        newElements.forEach((newEl, i) => {
-            const curEl = curElements[i];
+        const curDom = this._parentEl.querySelectorAll('*');
+
+        newDom.forEach((newEl, i) => {
+            const curEl = curDom[i];
+
 
             if (
                 !newEl.isEqualNode(curEl) &&
                 newEl.firstChild?.nodeValue.trim() !== ''
             ) {
-                console.log(newEl.firstChild?.nodeValue.trim());
+
                 curEl.textContent = newEl.textContent;
+            }
+
+            if (!newEl.isEqualNode(curEl)) {
+                Array.from(newEl.attributes).forEach(attr =>
+                    curEl.setAttribute(attr.name, attr.value)
+                );
             }
         });
     }
-
-    fillBookmarkBtn(target) {
-        const use = target.closest('.btn--round')?.querySelector('use');
-        if (!use) return;
-
-        Array.from(use.attributes)[0].value = `${icons}#icon-bookmark-fill`;
-    }
-
-    unfillBookmarkBtn(target) {
-        const use = target.closest('.btn--round')?.querySelector('use');
-        if (!use) return;
-
-        Array.from(use.attributes)[0].value = `${icons}#icon-bookmark`;
-    }
-
     _addHiddenClass(markup) {
         const element = parseHTML(markup).querySelector(`.${this._childEl}`);
         element.classList.add('hidden');
@@ -174,7 +168,9 @@ class RecipeView {
             title,
         } = this.#data;
 
-        clickTheServings.servings = +servings;
+
+        clickTheServings.paramValue = servings;
+
 
         return `
             <div class="${this._childEl}">
