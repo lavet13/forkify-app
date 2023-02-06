@@ -174,7 +174,7 @@ class RecipeView {
             title,
         } = this.#data;
 
-        clickTheServings.servings = +servings;
+        clickTheServings.paramValue = servings;
 
         return `
             <div class="${this._childEl}">

@@ -139,25 +139,15 @@ const controlPaginationResults = async function (e) {
     }
 };
 
-const controlServings = async function (e) {
+const controlServings = async function (newServings) {
     try {
-        const button = e.target.closest('.btn--increase-servings');
-
         const { updateServings } = Model;
-        const query = clickTheServings.getQuery(button);
-
-        if (query < 1) {
-            clickTheServings.servings++;
-            return;
-        }
-
-        updateServings(query);
+        updateServings(newServings);
 
         const {
             state: { recipe },
         } = Model;
 
-        // await recipeView.render(recipe);
         recipeView.update(recipe);
     } catch (err) {
         recipeView.renderError(err);
