@@ -9,7 +9,6 @@ class PaginationView {
     _error = 'error';
     _errorMessage = `Something went wrong with buttons :(`;
     _markup = ``;
-    _newMarkup = ``;
     _hiddenMarkup = ``;
     _id = 'ac1f4d84-3402-f04d-c36d-1ea3761e8018';
     #data;
@@ -28,16 +27,13 @@ class PaginationView {
             </div>
         `;
 
-        const childEl = this._parentEl.querySelectorAll(`.${this._childEl}`);
-        const messageEl = this._parentEl.querySelectorAll(`.${this._message}`);
-        const spinnerEl = this._parentEl.querySelectorAll(`.${this._spinner}`);
+        const childEl = this._parentEl.querySelector(`.${this._childEl}`);
+        const messageEl = this._parentEl.querySelector(`.${this._message}`);
+        const spinnerEl = this._parentEl.querySelector(`.${this._spinner}`);
 
-        if (childEl.length !== 0)
-            childEl.forEach(child => this._parentEl.removeChild(child));
-        if (messageEl.length !== 0)
-            messageEl.forEach(child => this._parentEl.removeChild(child));
-        if (spinnerEl.length !== 0)
-            spinnerEl.forEach(child => this._parentEl.removeChild(child));
+        childEl && this._parentEl.removeChild(childEl);
+        messageEl && this._parentEl.removeChild(messageEl);
+        spinnerEl && this._parentEl.removeChild(spinnerEl);
 
         this._parentEl.insertAdjacentHTML('afterbegin', markup);
     }
@@ -51,44 +47,31 @@ class PaginationView {
             </div>
         `;
 
-        const childEl = this._parentEl.querySelectorAll(`.${this._childEl}`);
-        const messageEl = this._parentEl.querySelectorAll(`.${this._message}`);
-        const errorMessageEl = this._parentEl.querySelectorAll(
-            `.${this._error}`
-        );
+        const childEl = this._parentEl.querySelector(`.${this._childEl}`);
+        const messageEl = this._parentEl.querySelector(`.${this._message}`);
+        const errorMessageEl = this._parentEl.querySelector(`.${this._error}`);
 
-        if (childEl.length !== 0)
-            childEl.forEach(child => this._parentEl.removeChild(child));
-        if (messageEl.length !== 0)
-            messageEl.forEach(child => this._parentEl.removeChild(child));
-        if (errorMessageEl.length !== 0)
-            errorMessageEl.forEach(child => this._parentEl.removeChild(child));
+        childEl && this._parentEl.removeChild(childEl);
+        messageEl && this._parentEl.removeChild(messageEl);
+        errorMessageEl && this._parentEl.removeChild(errorMessageEl);
 
         this._parentEl.insertAdjacentHTML('afterbegin', markup);
     }
 
     render(data) {
         try {
-            const childEl = this._parentEl.querySelectorAll(
-                `.${this._childEl}`
-            );
-
-            childEl.length !== 0 && childEl.forEach(child => child.remove());
-
             this.#data = data;
 
             this._markup = this.#generateMarkup();
             this._hiddenMarkup = this._addHiddenClass(this._markup);
-            const spinner = this._parentEl.querySelectorAll(
-                `.${this._spinner}`
-            );
+            const spinner = this._parentEl.querySelector(`.${this._spinner}`);
 
             this._parentEl.insertAdjacentHTML('afterbegin', this._hiddenMarkup);
             this._parentEl
                 .querySelector(`.${this._childEl}`)
                 .classList.remove('hidden');
 
-            if (spinner.length !== 0) spinner.forEach(child => child.remove());
+            spinner && spinner.remove();
         } catch (err) {
             console.error(err);
             throw err;

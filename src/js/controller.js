@@ -7,10 +7,8 @@ import searchView from './views/searchView';
 import resultsView from './views/resultsView';
 import paginationView from './views/paginationView';
 import clickThePagination from './views/clickThePagination';
-import clickTheServings from './views/clickTheServings';
 import clickTheBookmarkBtn from './views/clickTheBookmarkBtn';
-import bookmarksView from './views/bookmarksView';
-import clickBookmarkRecipe from './views/clickBookmarkRecipe';
+import clickTheServings from './views/clickTheServings';
 import HistoryAPI from './modules/historyAPI';
 import { timeout } from './helpers';
 import { TIMEOUT_SEC } from './config';
@@ -27,34 +25,40 @@ const controlRecipe = async function (e) {
 
         HistoryAPI.setURL(clickTheRecipe._param, clickTheRecipe._paramValue);
 
-        const {
-            getSearchResultsPage,
-            state: {
-                search: { recipes },
-            },
-        } = Model;
-
-        resultsView.update(
-            clickThePagination._paramValue
-                ? getSearchResultsPage(clickThePagination._paramValue)
-                : recipes
-        );
-
         const { loadRecipe } = Model;
 
         await loadRecipe(clickTheRecipe._paramValue);
 
         const {
             state: { recipe },
+            getSearchResultsPage,
         } = Model;
 
+        resultsView.update(
+            getSearchResultsPage(clickThePagination._paramValue)
+        );
         await recipeView.render(recipe);
     } catch (err) {
+        console.error(err);
         recipeView.renderError(err);
     } finally {
         HistoryAPI.setHistory(...HistoryAPI.historyViews);
     }
 };
+
+const controlServings = function (newServings) {
+    const { updateServings } = Model;
+
+    updateServings(newServings);
+
+    const {
+        state: { recipe },
+    } = Model;
+
+    recipeView.update(recipe);
+};
+
+const controlBookmarkBtn = function () {};
 
 const controlSearchResults = async function (e) {
     try {
@@ -139,103 +143,7 @@ const controlPaginationResults = async function (e) {
     }
 };
 
-const controlServings = async function (e) {
-    try {
-        const button = e.target.closest('.btn--increase-servings');
-
-        const { updateServings } = Model;
-        const query = clickTheServings.getQuery(button);
-
-        if (query < 1) {
-            clickTheServings.servings++;
-            return;
-        }
-
-        updateServings(query);
-
-        const {
-            state: { recipe },
-        } = Model;
-
-        // await recipeView.render(recipe);
-        recipeView.update(recipe);
-    } catch (err) {
-        recipeView.renderError(err);
-    }
-};
-
-const controlBookmarkBtn = async function (e) {
-    try {
-        const { searchParams } = new URL(window.location);
-        const isBookmarkExist = JSON.parse(
-            localStorage.getItem('recipes')
-        )?.some(recipe => recipe.id === searchParams.get('id'));
-
-        if (
-            isBookmarkExist &&
-            localStorage.getItem('recipes') &&
-            JSON.parse(localStorage.getItem('recipes')).length !== 0
-        ) {
-            recipeView.unfillBookmarkBtn(e.target);
-
-            const localStorageRecipes = JSON.parse(
-                localStorage.getItem('recipes')
-            );
-
-            const deletedRecipe = localStorageRecipes.filter(
-                recipe => recipe.id !== searchParams.get('id')
-            );
-
-            localStorage.setItem('recipes', JSON.stringify(deletedRecipe));
-
-            if (JSON.parse(localStorage.getItem('recipes')).length === 0) {
-                bookmarksView.renderMessage();
-                return;
-            }
-
-            await bookmarksView.render();
-            return;
-        }
-
-        recipeView.fillBookmarkBtn(e.target);
-        const recipe = recipeView.getData();
-        if (!bookmarksView._setLocalStorage(recipe)) return;
-        await bookmarksView.render();
-    } catch (err) {
-        bookmarksView.renderError(err);
-    }
-};
-
-const controlBookmarkRecipe = async function (e) {
-    try {
-        const query = clickBookmarkRecipe.getQuery(e.target);
-        if (!query) return;
-
-        clickTheRecipe._paramValue = decodeURIComponent(query);
-        recipeView.renderSpinner();
-
-        HistoryAPI.setURL(clickTheRecipe._param, clickTheRecipe._paramValue);
-
-        const { loadRecipe } = Model;
-
-        await loadRecipe(clickTheRecipe._paramValue);
-
-        const {
-            state: { recipe },
-        } = Model;
-
-        await recipeView.render(recipe);
-    } catch (err) {
-        recipeView.renderError(err);
-    } finally {
-        HistoryAPI.setHistory(...HistoryAPI.historyViews);
-    }
-};
-
 const controlOnLoad = function () {
-    // BOOKMARK
-    bookmarksView.renderFromLocalStorage();
-
     const { searchParams } = new URL(window.location);
     if ([...searchParams.entries()].length === 0) return;
     searchParams.forEach(async (query, param) => {
@@ -451,12 +359,10 @@ const controlOnPopState = function (e) {
 
 const init = function () {
     clickTheRecipe.addHandlerRender(controlRecipe);
-    searchView.addHandlerRender(controlSearchResults);
-    clickThePagination.addHandlerRender(controlPaginationResults);
     clickTheServings.addHandlerRender(controlServings);
     clickTheBookmarkBtn.addHandlerRender(controlBookmarkBtn);
-    clickBookmarkRecipe.addHandlerRender(controlBookmarkRecipe);
-
+    searchView.addHandlerRender(controlSearchResults);
+    clickThePagination.addHandlerRender(controlPaginationResults);
     HistoryAPI.addHandlerOnLoad(controlOnLoad);
     HistoryAPI.addHandlerOnPopState(controlOnPopState);
 };

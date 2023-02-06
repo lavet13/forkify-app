@@ -1,5 +1,4 @@
 import icons from '../../img/icons.svg';
-import clickTheRecipe from './clickTheRecipe';
 import { timeout, parseHTML } from '../helpers';
 import { TIMEOUT_SEC } from '../config';
 
@@ -11,16 +10,11 @@ class ResultsView {
     _error = 'error';
     _errorMessage = `No such recipes to be found!`;
     _markup = ``;
-    _newMarkup = ``;
     _hiddenMarkup = ``;
     _id = 'dbabfec5-dcc0-127a-24a0-22e42cbd7441';
     #data;
 
     constructor() {}
-
-    getData() {
-        return this.#data;
-    }
 
     renderError(message = this._errorMessage) {
         const markup = `
@@ -34,13 +28,13 @@ class ResultsView {
             </div>
         `;
 
-        const childEl = this._parentEl.querySelectorAll(`.${this._childEl}`);
-        const messageEl = this._parentEl.querySelectorAll(`.${this._message}`);
-        const spinnerEl = this._parentEl.querySelectorAll(`.${this._spinner}`);
+        const childEl = this._parentEl.querySelector(`.${this._childEl}`);
+        const messageEl = this._parentEl.querySelector(`.${this._message}`);
+        const spinnerEl = this._parentEl.querySelector(`.${this._spinner}`);
 
-        if (childEl.length !== 0) childEl.forEach(child => child.remove());
-        if (messageEl.length !== 0) messageEl.forEach(child => child.remove());
-        if (spinnerEl.length !== 0) spinnerEl.forEach(child => child.remove());
+        childEl && this._parentEl.removeChild(childEl);
+        messageEl && this._parentEl.removeChild(messageEl);
+        spinnerEl && this._parentEl.removeChild(spinnerEl);
 
         this._parentEl.insertAdjacentHTML('afterbegin', markup);
     }
@@ -54,37 +48,27 @@ class ResultsView {
             </div>
         `;
 
-        const childEl = this._parentEl.querySelectorAll(`.${this._childEl}`);
-        const messageEl = this._parentEl.querySelectorAll(`.${this._message}`);
-        const errorMessageEl = this._parentEl.querySelectorAll(
-            `.${this._error}`
-        );
+        const childEl = this._parentEl.querySelector(`.${this._childEl}`);
+        const messageEl = this._parentEl.querySelector(`.${this._message}`);
+        const errorMessageEl = this._parentEl.querySelector(`.${this._error}`);
 
-        if (childEl.length !== 0) childEl.forEach(child => child.remove());
-        if (messageEl.length !== 0) messageEl.forEach(child => child.remove());
-        if (errorMessageEl.length !== 0)
-            errorMessageEl.forEach(child => child.remove());
+        childEl && this._parentEl.removeChild(childEl);
+        messageEl && this._parentEl.removeChild(messageEl);
+        errorMessageEl && this._parentEl.removeChild(errorMessageEl);
 
         this._parentEl.insertAdjacentHTML('afterbegin', markup);
     }
 
     async render(data) {
         try {
-            const childEl = this._parentEl.querySelectorAll(
-                `.${this._childEl}`
-            );
-
-            childEl.length !== 0 && childEl.forEach(child => child.remove());
-
             this.#data = data;
+            console.log(this.#data);
 
             if (this.#data.length === 0) throw new Error(this._errorMessage);
 
             this._markup = this.#generateMarkup();
             this._hiddenMarkup = this._addHiddenClass(this._markup);
-            const spinner = this._parentEl.querySelectorAll(
-                `.${this._spinner}`
-            );
+            const spinner = this._parentEl.querySelector(`.${this._spinner}`);
 
             this._parentEl.insertAdjacentHTML('afterbegin', this._hiddenMarkup);
 
@@ -100,7 +84,7 @@ class ResultsView {
                 .querySelector(`.${this._childEl}`)
                 .classList.remove('hidden');
 
-            if (spinner.length !== 0) spinner.forEach(child => child.remove());
+            spinner && spinner.remove();
         } catch (err) {
             throw err;
         }
@@ -108,6 +92,8 @@ class ResultsView {
 
     update(data) {
         this.#data = data;
+        console.log(this.#data);
+
         this._newMarkup = this.#generateMarkup();
 
         const newDom = Array.from(
@@ -117,30 +103,22 @@ class ResultsView {
                 .querySelectorAll('*')
         );
 
-        newDom.forEach((newEl, i) => {
-            for (const [i, attr] of Array.from(newEl.attributes).entries()) {
-                if (attr.value === `preview__link preview__link--active`) {
-                    attr.value = `preview__link`;
-                    continue;
-                }
-
-                if (attr.value.split('=')[1] === clickTheRecipe._paramValue) {
-                    newEl.attributes[
-                        i - 1
-                    ].value = `preview__link preview__link--active`;
-                }
-            }
-        });
-
-        const curElements = this._parentEl.querySelectorAll('*');
+        const curDom = Array.from(this._parentEl.querySelectorAll('*'));
 
         newDom.forEach((newEl, i) => {
-            const curEl = curElements[i];
+            const curEl = curDom[i];
+
+            // if (
+            //     !newEl.isEqualNode(curEl) &&
+            //     newEl.firstChild?.nodeValue.trim() !== ''
+            // ) {
+            //     curEl.textContent = newEl.textContent;
+            // }
 
             if (!newEl.isEqualNode(curEl)) {
-                Array.from(newEl.attributes).forEach(attr =>
-                    curEl.setAttribute(attr.name, attr.value)
-                );
+                Array.from(newEl.attributes).forEach(attr => {
+                    curEl.setAttribute(attr.name, attr.value);
+                });
             }
         });
     }
@@ -168,20 +146,20 @@ class ResultsView {
 
     #generateMarkup() {
         const { searchParams } = new URL(window.location);
-        const idFromURL = searchParams.get('id');
+        const id = searchParams.get('id');
 
         return `
             <ul class="${this._childEl}">
             ${this.#data
                 .map(
-                    ({ id, imageUrl, publisher, title }) =>
+                    ({ id: idRecipe, imageUrl, publisher, title }) =>
                         `
                     <li class="preview">
                         <a
                             class="preview__link ${
-                                id === idFromURL ? 'preview__link--active' : ''
+                                idRecipe === id ? 'preview__link--active' : ''
                             }"
-                            href="?id=${id}"
+                            href="?id=${idRecipe}"
                         >
                             <figure class="preview__fig">
                                 <img src="${imageUrl}" alt="${title}" />

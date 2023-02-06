@@ -4,6 +4,8 @@ import { getJSON, getValidProperties } from './helpers';
 export const state = {
     recipe: {},
     search: {},
+    bookmarks: [],
+    serving: 1,
 };
 
 // business logic
@@ -50,14 +52,9 @@ export const getTotalCountPage = function () {
 export const updateServings = function (newServings) {
     state.recipe.ingredients.forEach(ing => {
         ing.quantity = (ing.quantity * newServings) / state.recipe.servings;
-        // newQt = oldQt * newServings / oldServings; // 2 * 8 / 4 = 4
     });
 
     state.recipe.servings = newServings;
 };
 
-export const addBookmark = function (recipe) {
-    state.bookmarks.push(recipe);
-
-    if (state.recipe.id === recipe.id) state.recipe.bookmarked = true;
-};
+export const addBookmark = function () {};

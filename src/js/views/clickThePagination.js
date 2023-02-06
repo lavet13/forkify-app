@@ -18,7 +18,7 @@ class ClickThePagination {
         this._parentEl.addEventListener('click', e => {
             e.preventDefault();
 
-            e.target.closest('.btn--inline') && handler.call(this, e);
+            if (e.target.closest('.btn--inline')) handler.call(this, e);
         });
     }
 }
