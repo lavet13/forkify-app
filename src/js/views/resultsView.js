@@ -77,7 +77,6 @@ class ResultsView {
             childEl.length !== 0 && childEl.forEach(child => child.remove());
 
             this.#data = data;
-            console.log(this.#data);
 
             if (this.#data.length === 0) throw new Error(this._errorMessage);
 
@@ -109,9 +108,6 @@ class ResultsView {
 
     update(data) {
         this.#data = data;
-
-        console.log(this.#data);
-
         this._newMarkup = this.#generateMarkup();
 
         const newDom = Array.from(
@@ -121,22 +117,30 @@ class ResultsView {
                 .querySelectorAll('*')
         );
 
-        const curDom = Array.from(this._parentEl.querySelectorAll('*'));
+        newDom.forEach((newEl, i) => {
+            for (const [i, attr] of Array.from(newEl.attributes).entries()) {
+                if (attr.value === `preview__link preview__link--active`) {
+                    attr.value = `preview__link`;
+                    continue;
+                }
+
+                if (attr.value.split('=')[1] === clickTheRecipe._paramValue) {
+                    newEl.attributes[
+                        i - 1
+                    ].value = `preview__link preview__link--active`;
+                }
+            }
+        });
+
+        const curElements = this._parentEl.querySelectorAll('*');
 
         newDom.forEach((newEl, i) => {
-            const curEl = curDom[i];
-
-            // if (
-            //     !newEl.isEqualNode(curEl) &&
-            //     newEl.firstChild?.nodeValue.trim() !== ''
-            // ) {
-            //     curEl.textContent = newEl.textContent;
-            // }
+            const curEl = curElements[i];
 
             if (!newEl.isEqualNode(curEl)) {
-                Array.from(newEl.attributes).forEach(attr => {
-                    curEl.setAttribute(attr.name, attr.value);
-                });
+                Array.from(newEl.attributes).forEach(attr =>
+                    curEl.setAttribute(attr.name, attr.value)
+                );
             }
         });
     }
@@ -164,20 +168,20 @@ class ResultsView {
 
     #generateMarkup() {
         const { searchParams } = new URL(window.location);
-        const id = searchParams.get('id');
+        const idFromURL = searchParams.get('id');
 
         return `
             <ul class="${this._childEl}">
             ${this.#data
                 .map(
-                    ({ id: idRecipe, imageUrl, publisher, title }) =>
+                    ({ id, imageUrl, publisher, title }) =>
                         `
                     <li class="preview">
                         <a
                             class="preview__link ${
-                                idRecipe === id ? 'preview__link--active' : ''
+                                id === idFromURL ? 'preview__link--active' : ''
                             }"
-                            href="?id=${idRecipe}"
+                            href="?id=${id}"
                         >
                             <figure class="preview__fig">
                                 <img src="${imageUrl}" alt="${title}" />
