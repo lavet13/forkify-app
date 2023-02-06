@@ -2,6 +2,7 @@ import icons from '../../img/icons.svg';
 import { timeout, parseHTML } from '../helpers';
 import { TIMEOUT_SEC } from '../config';
 import { Fraction } from 'fractional';
+import clickTheServings from './clickTheServings';
 
 class RecipeView {
     _parentEl = document.querySelector('.recipe');
@@ -11,6 +12,7 @@ class RecipeView {
     _error = 'error';
     _errorMessage = `recipe 😐`;
     _markup = ``;
+    _newMarkup = ``;
     _hiddenMarkup = ``;
     _id = 'b9919acb-5223-330a-2f98-02cd1ed5a288';
     #data;
@@ -64,7 +66,7 @@ class RecipeView {
         try {
             this.#data = data;
 
-            this.#generateMarkup();
+            this._markup = this.#generateMarkup();
             this._hiddenMarkup = this._addHiddenClass(this._markup);
             const spinner = this._parentEl.querySelector(`.${this._spinner}`);
 
@@ -81,6 +83,38 @@ class RecipeView {
         } catch (err) {
             throw err;
         }
+    }
+
+    update(data) {
+        this.#data = data;
+
+        this._newMarkup = this.#generateMarkup();
+
+        const newDom = Array.from(
+            document
+                .createRange()
+                .createContextualFragment(this._newMarkup)
+                .querySelectorAll('*')
+        );
+
+        const curDom = this._parentEl.querySelectorAll('*');
+
+        newDom.forEach((newEl, i) => {
+            const curEl = curDom[i];
+
+            if (
+                !newEl.isEqualNode(curEl) &&
+                newEl.firstChild?.nodeValue.trim() !== ''
+            ) {
+                curEl.textContent = newEl.textContent;
+            }
+
+            if (!newEl.isEqualNode(curEl)) {
+                Array.from(newEl.attributes).forEach(attr =>
+                    curEl.setAttribute(attr.name, attr.value)
+                );
+            }
+        });
     }
 
     _addHiddenClass(markup) {
@@ -101,7 +135,9 @@ class RecipeView {
             title,
         } = this.#data;
 
-        this._markup = `
+        clickTheServings.paramValue = servings;
+
+        return `
             <div class="${this._childEl}">
                 <figure class="recipe__fig">
                   <img src="${imageUrl}" alt="${title}" class="recipe__img" />

@@ -6,12 +6,13 @@ import recipeView from './views/recipeView';
 import searchView from './views/searchView';
 import resultsView from './views/resultsView';
 import paginationView from './views/paginationView';
+import clickThePagination from './views/clickThePagination';
+import clickTheServings from './views/clickTheServings';
 import HistoryAPI from './modules/historyAPI';
 import { timeout } from './helpers';
 import { TIMEOUT_SEC } from './config';
 
 import * as Model from '../js/model';
-import clickThePagination from './views/clickThePagination';
 
 const controlRecipe = async function (e) {
     try {
@@ -29,14 +30,31 @@ const controlRecipe = async function (e) {
 
         const {
             state: { recipe },
+            getSearchResultsPage,
         } = Model;
 
+        resultsView.update(
+            getSearchResultsPage(clickThePagination._paramValue)
+        );
         await recipeView.render(recipe);
     } catch (err) {
+        console.error(err);
         recipeView.renderError(err);
     } finally {
         HistoryAPI.setHistory(...HistoryAPI.historyViews);
     }
+};
+
+const controlServings = function (newServings) {
+    const { updateServings } = Model;
+
+    updateServings(newServings);
+
+    const {
+        state: { recipe },
+    } = Model;
+
+    recipeView.update(recipe);
 };
 
 const controlSearchResults = async function (e) {
@@ -338,6 +356,7 @@ const controlOnPopState = function (e) {
 
 const init = function () {
     clickTheRecipe.addHandlerRender(controlRecipe);
+    clickTheServings.addHandlerRender(controlServings);
     searchView.addHandlerRender(controlSearchResults);
     clickThePagination.addHandlerRender(controlPaginationResults);
     HistoryAPI.addHandlerOnLoad(controlOnLoad);

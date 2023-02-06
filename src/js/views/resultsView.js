@@ -62,10 +62,11 @@ class ResultsView {
     async render(data) {
         try {
             this.#data = data;
+            console.log(this.#data);
 
             if (this.#data.length === 0) throw new Error(this._errorMessage);
 
-            this.#generateMarkup();
+            this._markup = this.#generateMarkup();
             this._hiddenMarkup = this._addHiddenClass(this._markup);
             const spinner = this._parentEl.querySelector(`.${this._spinner}`);
 
@@ -87,6 +88,39 @@ class ResultsView {
         } catch (err) {
             throw err;
         }
+    }
+
+    update(data) {
+        this.#data = data;
+        console.log(this.#data);
+
+        this._newMarkup = this.#generateMarkup();
+
+        const newDom = Array.from(
+            document
+                .createRange()
+                .createContextualFragment(this._newMarkup)
+                .querySelectorAll('*')
+        );
+
+        const curDom = Array.from(this._parentEl.querySelectorAll('*'));
+
+        newDom.forEach((newEl, i) => {
+            const curEl = curDom[i];
+
+            // if (
+            //     !newEl.isEqualNode(curEl) &&
+            //     newEl.firstChild?.nodeValue.trim() !== ''
+            // ) {
+            //     curEl.textContent = newEl.textContent;
+            // }
+
+            if (!newEl.isEqualNode(curEl)) {
+                Array.from(newEl.attributes).forEach(attr => {
+                    curEl.setAttribute(attr.name, attr.value);
+                });
+            }
+        });
     }
 
     _addHiddenClass(markup) {
@@ -111,16 +145,21 @@ class ResultsView {
     }
 
     #generateMarkup() {
-        this._markup = `
+        const { searchParams } = new URL(window.location);
+        const id = searchParams.get('id');
+
+        return `
             <ul class="${this._childEl}">
             ${this.#data
                 .map(
-                    ({ id, imageUrl, publisher, title }) =>
+                    ({ id: idRecipe, imageUrl, publisher, title }) =>
                         `
                     <li class="preview">
                         <a
-                            class="preview__link preview__link--active"
-                            href="?id=${id}"
+                            class="preview__link ${
+                                idRecipe === id ? 'preview__link--active' : ''
+                            }"
+                            href="?id=${idRecipe}"
                         >
                             <figure class="preview__fig">
                                 <img src="${imageUrl}" alt="${title}" />

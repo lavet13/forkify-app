@@ -62,7 +62,7 @@ class PaginationView {
         try {
             this.#data = data;
 
-            this.#generateMarkup();
+            this._markup = this.#generateMarkup();
             this._hiddenMarkup = this._addHiddenClass(this._markup);
             const spinner = this._parentEl.querySelector(`.${this._spinner}`);
 
@@ -89,7 +89,7 @@ class PaginationView {
         console.log(`pageNumber = ${pageNumber}`);
         console.log(`totalPageCount = ${totalPageCount}`);
 
-        this._markup = `
+        return `
         <div class="${this._childEl}">
             ${
                 pageNumber > 1
