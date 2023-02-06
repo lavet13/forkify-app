@@ -44,7 +44,6 @@ const controlRecipe = async function (e) {
     }
 };
 
-<<<<<<< HEAD
 const controlServings = function (newServings) {
     const { updateServings } = Model;
 
@@ -59,8 +58,6 @@ const controlServings = function (newServings) {
 
 const controlBookmarkBtn = function () {};
 
-=======
->>>>>>> 1650072b134c894bc595a53db5d8410652951b8f
 const controlSearchResults = async function (e) {
     try {
         const query = searchView.getQuery();
