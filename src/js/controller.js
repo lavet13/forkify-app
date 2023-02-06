@@ -7,9 +7,7 @@ import searchView from './views/searchView';
 import resultsView from './views/resultsView';
 import paginationView from './views/paginationView';
 import clickThePagination from './views/clickThePagination';
-import clickTheBookmarkBtn from './views/clickTheBookmarkBtn';
 import clickTheServings from './views/clickTheServings';
-import clickTheBookmarkBtn from './views/clickTheBookmarkBtn';
 import HistoryAPI from './modules/historyAPI';
 import { timeout } from './helpers';
 import { TIMEOUT_SEC } from './config';
@@ -32,10 +30,15 @@ const controlRecipe = async function (e) {
 
         const {
             state: { recipe },
+            getSearchResultsPage,
         } = Model;
 
+        resultsView.update(
+            getSearchResultsPage(clickThePagination._paramValue)
+        );
         await recipeView.render(recipe);
     } catch (err) {
+        console.error(err);
         recipeView.renderError(err);
     } finally {
         HistoryAPI.setHistory(...HistoryAPI.historyViews);
@@ -53,8 +56,6 @@ const controlServings = function (newServings) {
 
     recipeView.update(recipe);
 };
-
-const controlBookmarkBtn = function () {};
 
 const controlSearchResults = async function (e) {
     try {
@@ -355,10 +356,7 @@ const controlOnPopState = function (e) {
 
 const init = function () {
     clickTheRecipe.addHandlerRender(controlRecipe);
-    searchView.addHandlerRender(controlSearchResults);
-    clickThePagination.addHandlerRender(controlPaginationResults);
     clickTheServings.addHandlerRender(controlServings);
-    clickTheBookmarkBtn.addHandlerRender(controlBookmarkBtn);
     searchView.addHandlerRender(controlSearchResults);
     clickThePagination.addHandlerRender(controlPaginationResults);
     HistoryAPI.addHandlerOnLoad(controlOnLoad);
