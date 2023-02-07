@@ -200,8 +200,45 @@ const controlBookmarkBtn = async function (btn) {
 
 const controlBookmarkRecipe = async function (e) {
     try {
+        const query = clickBookmarkRecipe.getQuery(e.target);
+        if (!query) return;
+
+        if (recipeView._parentEl.querySelector(`.${recipeView._spinner}`))
+            return;
+
+        clickTheRecipe._paramValue = decodeURIComponent(query);
+        recipeView.renderSpinner();
+
+        HistoryAPI.setURL(clickTheRecipe._param, clickTheRecipe._paramValue);
+
+        const {
+            getSearchResultsPage,
+            state: {
+                search: { recipes },
+                bookmarks,
+            },
+        } = Model;
+
+        resultsView.update(
+            clickThePagination._paramValue
+                ? getSearchResultsPage(clickThePagination._paramValue)
+                : recipes
+        );
+
+        const { loadRecipe } = Model;
+
+        await loadRecipe(clickTheRecipe._paramValue);
+
+        const {
+            state: { recipe },
+        } = Model;
+
+        await recipeView.render(recipe);
+        bookmarksView.update(bookmarks);
     } catch (err) {
         recipeView.renderError(err);
+    } finally {
+        HistoryAPI.setHistory(...HistoryAPI.historyViews);
     }
 };
 

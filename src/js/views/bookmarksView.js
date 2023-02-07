@@ -21,9 +21,7 @@ class BookmarksView {
             <div class="message">
                 <div>
                     <svg>
-                        <use
-                            href="${icons}#icon-smile"
-                        ></use>
+                        <use href="${icons}#icon-smile"></use>
                     </svg>
                 </div>
                 <p>
