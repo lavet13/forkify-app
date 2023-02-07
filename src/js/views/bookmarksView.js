@@ -125,69 +125,10 @@ class BookmarksView {
         }
     }
 
-    async renderFromLocalStorage() {
-        try {
-            const recipes = JSON.parse(localStorage.getItem('recipes'));
-
-            if (!Array.isArray(recipes) || !(recipes.length !== 0)) {
-                return;
-            }
-
-            this.renderSpinner();
-
-            const spinner = this._parentEl.querySelectorAll(
-                `.${this._spinner}`
-            );
-
-            this._markup = this.#generateMarkup();
-            this._hiddenMarkup = this._addHiddenClass(this._markup);
-            this._parentEl.insertAdjacentHTML('beforeend', this._hiddenMarkup);
-
-            await Promise.all(
-                this._downloadImages(
-                    Array.from(
-                        this._parentEl.querySelectorAll(`.preview__fig img`)
-                    )
-                )
-            );
-
-            this._parentEl
-                .querySelector(`.${this._childEl}`)
-                .classList.remove('hidden');
-
-            if (spinner.length !== 0) spinner.forEach(child => child.remove());
-        } catch (err) {
-            console.error(err);
-            this.renderError(err);
-        }
-    }
-
     _addHiddenClass(markup) {
         const element = parseHTML(markup).querySelector(`.${this._childEl}`);
         element.classList.add('hidden');
         return element.outerHTML;
-    }
-
-    _setLocalStorage(recipe) {
-        const { id, imageUrl, title, publisher } = recipe;
-
-        if (!localStorage.getItem('recipes')) {
-            const recipes = [{ id, imageUrl, title, publisher }];
-            localStorage.setItem('recipes', JSON.stringify(recipes));
-            return true;
-        }
-
-        if (localStorage.getItem('recipes')) {
-            const recipes = JSON.parse(localStorage.getItem('recipes'));
-
-            if (!recipes.some(({ id: idRecipe }) => idRecipe === id)) {
-                recipes.push({ id, imageUrl, title, publisher });
-                localStorage.setItem('recipes', JSON.stringify(recipes));
-                return true;
-            }
-
-            return false;
-        }
     }
 
     #generateMarkup() {

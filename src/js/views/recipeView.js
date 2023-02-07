@@ -86,24 +86,6 @@ class RecipeView {
 
             this._parentEl.insertAdjacentHTML('beforeend', this._hiddenMarkup);
 
-            const recipes = JSON.parse(localStorage.getItem('recipes'));
-            const { searchParams } = new URL(window.location);
-
-            if (Array.isArray(recipes) && recipes.length !== 0)
-                for (const recipe of recipes) {
-                    if (recipe.id === searchParams.get('id')) {
-                        const use =
-                            this._parentEl.querySelector('.btn--round use');
-                        if (!use)
-                            throw new Error('cannot find button bookmark >//<');
-
-                        Array.from(
-                            use.attributes
-                        )[0].value = `${icons}#icon-bookmark-fill`;
-                        break;
-                    }
-                }
-
             await this._downloadImage(
                 this._parentEl.querySelector(`.recipe__img`)
             );
@@ -136,24 +118,15 @@ class RecipeView {
                 !newEl.isEqualNode(curEl) &&
                 newEl.firstChild?.nodeValue.trim() !== ''
             ) {
-                console.log(newEl.firstChild?.nodeValue.trim());
                 curEl.textContent = newEl.textContent;
             }
+
+            if (!newEl.isEqualNode(curEl)) {
+                Array.from(newEl.attributes).forEach(attr =>
+                    curEl.setAttribute(attr.name, attr.value)
+                );
+            }
         });
-    }
-
-    fillBookmarkBtn(target) {
-        const use = target.closest('.btn--round')?.querySelector('use');
-        if (!use) return;
-
-        Array.from(use.attributes)[0].value = `${icons}#icon-bookmark-fill`;
-    }
-
-    unfillBookmarkBtn(target) {
-        const use = target.closest('.btn--round')?.querySelector('use');
-        if (!use) return;
-
-        Array.from(use.attributes)[0].value = `${icons}#icon-bookmark`;
     }
 
     _addHiddenClass(markup) {
@@ -172,6 +145,7 @@ class RecipeView {
             servings,
             sourceUrl,
             title,
+            bookmarked,
         } = this.#data;
 
         clickTheServings.paramValue = servings;
@@ -221,7 +195,9 @@ class RecipeView {
                   </div>
                   <button class="btn--round">
                     <svg class="">
-                      <use href="${icons}#icon-bookmark"></use>
+                      <use href="${icons}#icon-bookmark${
+            bookmarked ? '-fill' : ''
+        }"></use>
                     </svg>
                   </button>
                 </div>

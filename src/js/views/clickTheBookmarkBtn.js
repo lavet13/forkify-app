@@ -7,8 +7,10 @@ class clickTheBookmarkBtn {
         this._parentEl.addEventListener('click', e => {
             e.preventDefault();
 
-            e.target.closest('.recipe__details button.btn--round') &&
-                handler.call(this, e);
+            const btn = e.target.closest('.btn--round');
+            if (!btn) return;
+
+            handler.call(this, btn);
         });
     }
 }

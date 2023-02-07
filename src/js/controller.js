@@ -17,10 +17,13 @@ import { TIMEOUT_SEC } from './config';
 
 import * as Model from '../js/model';
 
-const controlRecipe = async function (e) {
+const controlRecipes = async function (e) {
     try {
         const query = clickTheRecipe.getQuery(e.target);
         if (!query) return;
+
+        if (recipeView._parentEl.querySelector(`.${recipeView._spinner}`))
+            return;
 
         clickTheRecipe._paramValue = decodeURIComponent(query);
         recipeView.renderSpinner();
@@ -60,6 +63,9 @@ const controlSearchResults = async function (e) {
     try {
         const query = searchView.getQuery();
         if (!query) return;
+
+        if (resultsView._parentEl.querySelector(`.${resultsView._spinner}`))
+            return;
 
         searchView._paramValue = decodeURIComponent(query);
         resultsView.renderSpinner();
@@ -154,43 +160,18 @@ const controlServings = async function (newServings) {
     }
 };
 
-const controlBookmarkBtn = async function (e) {
+const controlBookmarkBtn = async function (btn) {
     try {
-        const { searchParams } = new URL(window.location);
-        const isBookmarkExist = JSON.parse(
-            localStorage.getItem('recipes')
-        )?.some(recipe => recipe.id === searchParams.get('id'));
+        const {
+            deleteBookmark,
+            addBookmark,
+            state: { recipe },
+        } = Model;
 
-        if (
-            isBookmarkExist &&
-            localStorage.getItem('recipes') &&
-            JSON.parse(localStorage.getItem('recipes')).length !== 0
-        ) {
-            recipeView.unfillBookmarkBtn(e.target);
+        if (recipe.bookmarked) deleteBookmark(recipe.id);
+        else addBookmark(recipe);
 
-            const localStorageRecipes = JSON.parse(
-                localStorage.getItem('recipes')
-            );
-
-            const deletedRecipe = localStorageRecipes.filter(
-                recipe => recipe.id !== searchParams.get('id')
-            );
-
-            localStorage.setItem('recipes', JSON.stringify(deletedRecipe));
-
-            if (JSON.parse(localStorage.getItem('recipes')).length === 0) {
-                bookmarksView.renderMessage();
-                return;
-            }
-
-            await bookmarksView.render();
-            return;
-        }
-
-        recipeView.fillBookmarkBtn(e.target);
-        const recipe = recipeView.getData();
-        if (!bookmarksView._setLocalStorage(recipe)) return;
-        await bookmarksView.render();
+        recipeView.update(recipe);
     } catch (err) {
         bookmarksView.renderError(err);
     }
@@ -198,34 +179,12 @@ const controlBookmarkBtn = async function (e) {
 
 const controlBookmarkRecipe = async function (e) {
     try {
-        const query = clickBookmarkRecipe.getQuery(e.target);
-        if (!query) return;
-
-        clickTheRecipe._paramValue = decodeURIComponent(query);
-        recipeView.renderSpinner();
-
-        HistoryAPI.setURL(clickTheRecipe._param, clickTheRecipe._paramValue);
-
-        const { loadRecipe } = Model;
-
-        await loadRecipe(clickTheRecipe._paramValue);
-
-        const {
-            state: { recipe },
-        } = Model;
-
-        await recipeView.render(recipe);
     } catch (err) {
         recipeView.renderError(err);
-    } finally {
-        HistoryAPI.setHistory(...HistoryAPI.historyViews);
     }
 };
 
 const controlOnLoad = function () {
-    // BOOKMARK
-    bookmarksView.renderFromLocalStorage();
-
     const { searchParams } = new URL(window.location);
     if ([...searchParams.entries()].length === 0) return;
     searchParams.forEach(async (query, param) => {
@@ -263,7 +222,7 @@ const controlOnLoad = function () {
                     const { _paramValue: pageNumber } = clickThePagination;
 
                     const recipesPerPage = getSearchResultsPage(pageNumber);
-                    if (!Number.isFinite(pageNumber) || pageNumber <= 0)
+                    if (!Number.isFinite(pageNumber) || pageNumber < 1)
                         throw new Error('Invalid page');
                     HistoryAPI.setURL(clickThePagination._param, pageNumber);
                     await resultsView.render(recipesPerPage);
@@ -440,7 +399,7 @@ const controlOnPopState = function (e) {
 };
 
 const init = function () {
-    clickTheRecipe.addHandlerRender(controlRecipe);
+    clickTheRecipe.addHandlerRender(controlRecipes);
     searchView.addHandlerRender(controlSearchResults);
     clickThePagination.addHandlerRender(controlPaginationResults);
     clickTheServings.addHandlerRender(controlServings);

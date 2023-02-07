@@ -117,25 +117,17 @@ class ResultsView {
                 .querySelectorAll('*')
         );
 
-        newDom.forEach((newEl, i) => {
-            for (const [i, attr] of Array.from(newEl.attributes).entries()) {
-                if (attr.value === `preview__link preview__link--active`) {
-                    attr.value = `preview__link`;
-                    continue;
-                }
-
-                if (attr.value.split('=')[1] === clickTheRecipe._paramValue) {
-                    newEl.attributes[
-                        i - 1
-                    ].value = `preview__link preview__link--active`;
-                }
-            }
-        });
-
         const curElements = this._parentEl.querySelectorAll('*');
 
         newDom.forEach((newEl, i) => {
             const curEl = curElements[i];
+
+            if (
+                !newEl.isEqualNode(curEl) &&
+                newEl.firstChild?.nodeValue.trim() !== ''
+            ) {
+                curEl.textContent = newEl.textContent;
+            }
 
             if (!newEl.isEqualNode(curEl)) {
                 Array.from(newEl.attributes).forEach(attr =>

@@ -4,6 +4,7 @@ import { getJSON, getValidProperties } from './helpers';
 export const state = {
     recipe: {},
     search: {},
+    bookmarks: [],
 };
 
 // business logic
@@ -13,7 +14,12 @@ export const loadRecipe = async function (id) {
             data: { recipe },
         } = await getJSON(`${API_URL}${id}`);
 
-        state.recipe = getValidProperties(recipe);
+        const recipeData = getValidProperties(recipe);
+
+        state.recipe = {
+            ...recipeData,
+            bookmarked: state.bookmarks.some(({ id }) => id === recipeData.id),
+        };
     } catch (err) {
         throw err;
     }
@@ -50,14 +56,21 @@ export const getTotalCountPage = function () {
 export const updateServings = function (newServings) {
     state.recipe.ingredients.forEach(ing => {
         ing.quantity = (ing.quantity * newServings) / state.recipe.servings;
-        // newQt = oldQt * newServings / oldServings; // 2 * 8 / 4 = 4
     });
 
     state.recipe.servings = newServings;
 };
 
 export const addBookmark = function (recipe) {
-    state.bookmarks.push(recipe);
+    if (!state.bookmarks.some(({ id }) => id === recipe.id))
+        state.bookmarks.push(recipe);
 
     if (state.recipe.id === recipe.id) state.recipe.bookmarked = true;
+};
+
+export const deleteBookmark = function (id) {
+    const index = state.bookmarks.findIndex(bookmark => bookmark.id === id);
+    state.bookmarks.splice(index, 1);
+
+    if (state.recipe.id === id) state.recipe.bookmarked = false;
 };
