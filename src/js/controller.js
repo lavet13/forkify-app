@@ -34,6 +34,7 @@ const controlRecipes = async function (e) {
             getSearchResultsPage,
             state: {
                 search: { recipes },
+                bookmarks,
             },
         } = Model;
 
@@ -42,6 +43,8 @@ const controlRecipes = async function (e) {
                 ? getSearchResultsPage(clickThePagination._paramValue)
                 : recipes
         );
+
+        bookmarksView.update(bookmarks);
 
         const { loadRecipe } = Model;
 
@@ -162,16 +165,34 @@ const controlServings = async function (newServings) {
 
 const controlBookmarkBtn = async function (btn) {
     try {
+        if (bookmarksView._parentEl.querySelector(`.${bookmarksView._spinner}`))
+            return;
+
         const {
             deleteBookmark,
             addBookmark,
-            state: { recipe },
+            state: { recipe, bookmarks },
         } = Model;
 
-        if (recipe.bookmarked) deleteBookmark(recipe.id);
-        else addBookmark(recipe);
+        let isError = false;
+
+        if (recipe.bookmarked) {
+            isError = deleteBookmark(recipe.id);
+        } else {
+            isError = addBookmark(recipe);
+        }
+
+        if (isError) return;
 
         recipeView.update(recipe);
+
+        if (bookmarks.length === 0) {
+            bookmarksView.renderMessage();
+            return;
+        }
+
+        bookmarksView.renderSpinner();
+        bookmarksView.render(bookmarks);
     } catch (err) {
         bookmarksView.renderError(err);
     }
@@ -185,6 +206,23 @@ const controlBookmarkRecipe = async function (e) {
 };
 
 const controlOnLoad = function () {
+    if (localStorage.getItem('bookmarks')) {
+        let {
+            state: { bookmarks },
+        } = Model;
+
+        bookmarks = JSON.parse(localStorage.getItem('bookmarks'));
+
+        if (bookmarks.length === 0) {
+            bookmarksView.renderMessage();
+        }
+
+        if (bookmarks.length !== 0) {
+            bookmarksView.renderSpinner();
+            bookmarksView.render(bookmarks);
+        }
+    }
+
     const { searchParams } = new URL(window.location);
     if ([...searchParams.entries()].length === 0) return;
     searchParams.forEach(async (query, param) => {

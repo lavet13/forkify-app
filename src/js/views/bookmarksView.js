@@ -89,15 +89,14 @@ class BookmarksView {
         this._parentEl.insertAdjacentHTML('afterbegin', markup);
     }
 
-    async render() {
+    async render(data) {
         try {
             const childEl = this._parentEl.querySelectorAll(
                 `.${this._childEl}`
             );
-
             childEl.length !== 0 && childEl.forEach(child => child.remove());
 
-            this.renderSpinner();
+            this.#data = data;
 
             const spinner = this._parentEl.querySelectorAll(
                 `.${this._spinner}`
@@ -125,6 +124,30 @@ class BookmarksView {
         }
     }
 
+    update(data) {
+        this.#data = data;
+        this._newMarkup = this.#generateMarkup();
+
+        const newDom = Array.from(
+            document
+                .createRange()
+                .createContextualFragment(this._newMarkup)
+                .querySelectorAll('*')
+        );
+
+        const curElements = this._parentEl.querySelectorAll('*');
+
+        newDom.forEach((newEl, i) => {
+            const curEl = curElements[i];
+
+            if (!newEl.isEqualNode(curEl)) {
+                Array.from(newEl.attributes).forEach(attr =>
+                    curEl.setAttribute(attr.name, attr.value)
+                );
+            }
+        });
+    }
+
     _addHiddenClass(markup) {
         const element = parseHTML(markup).querySelector(`.${this._childEl}`);
         element.classList.add('hidden');
@@ -132,23 +155,33 @@ class BookmarksView {
     }
 
     #generateMarkup() {
-        const recipes = JSON.parse(localStorage.getItem('recipes'));
+        const { searchParams } = new URL(window.location);
+        const idFromURL = searchParams.get('id');
 
         return `
             <ul class="${this._childEl}">
-                ${recipes
+                ${this.#data
                     .map(
                         ({ id, imageUrl, title, publisher }) => `
                         <li class="preview">
-                            <a class="preview__link" href="?id=${id}">
+                            <a class="preview__link ${
+                                idFromURL === id ? 'preview__link--active' : ''
+                            }" href="?id=${id}">
                                 <figure class="preview__fig">
                                     <img src="${imageUrl}" alt="${title}" />
                                 </figure>
                                 <div class="preview__data">
-                                    <h4 class="preview__name">
+                                    <h4 class="preview__title">
                                         ${title}
                                     </h4>
-                                    <p class="preview__publisher">${publisher}</p>
+                                    <p class="preview__publisher">
+                                        ${publisher}
+                                    </p>
+                                    <div class="preview__user-generated">
+                                        <svg>
+                                            <use href="${icons}#icon-user"></use>
+                                        </svg>
+                                    </div>
                                 </div>
                             </a>
                         </li>`
