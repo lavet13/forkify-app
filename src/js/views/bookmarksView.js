@@ -1,91 +1,14 @@
 import icons from '../../img/icons.svg';
-import { parseHTML } from '../helpers';
+import { TIMEOUT_SEC } from '../config';
+import { timeout } from '../helpers';
+import View from './View';
 
-class BookmarksView {
+class BookmarksView extends View {
     _parentEl = document.querySelector('.bookmarks');
     _childEl = `bookmarks__list`;
-    _spinner = 'spinner';
-    _message = 'message';
-    _error = 'error';
     _errorMessage = `recipe 😐`;
     _messageText = `No bookmarks yet. Find a nice recipe and bookmark it :)`;
-    _markup = ``;
-    _newMarkup = ``;
-    _hiddenMarkup = ``;
-    #data;
-
-    constructor() {}
-
-    renderMessage(message = this._messageText) {
-        const markup = `
-            <div class="message">
-                <div>
-                    <svg>
-                        <use href="${icons}#icon-smile"></use>
-                    </svg>
-                </div>
-                <p>
-                    ${message}
-                </p>
-            </div>
-        `;
-
-        const childEl = this._parentEl.querySelectorAll(`.${this._childEl}`);
-        const errorEl = this._parentEl.querySelectorAll(`.${this._error}`);
-        const spinnerEl = this._parentEl.querySelectorAll(`.${this._spinner}`);
-
-        if (childEl.length !== 0) childEl.forEach(child => child.remove());
-        if (errorEl.length !== 0) errorEl.forEach(child => child.remove());
-        if (spinnerEl.length !== 0) spinnerEl.forEach(child => child.remove());
-
-        this._parentEl.insertAdjacentHTML('afterbegin', markup);
-    }
-
-    renderError(message = this._errorMessage) {
-        const markup = `
-            <div class="error">
-                <div>
-                    <svg>
-                        <use href="${icons}#icon-alert-triangle"></use>
-                    </svg>
-                </div>
-                <p>${message}</p>
-            </div>
-        `;
-
-        const childEl = this._parentEl.querySelectorAll(`.${this._childEl}`);
-        const messageEl = this._parentEl.querySelectorAll(`.${this._message}`);
-        const spinnerEl = this._parentEl.querySelectorAll(`.${this._spinner}`);
-
-        if (childEl.length !== 0) childEl.forEach(child => child.remove());
-        if (messageEl.length !== 0) messageEl.forEach(child => child.remove());
-        if (spinnerEl.length !== 0) spinnerEl.forEach(child => child.remove());
-
-        this._parentEl.insertAdjacentHTML('afterbegin', markup);
-    }
-
-    renderSpinner() {
-        const markup = `
-            <div class="spinner">
-                <svg>
-                    <use href="${icons}#icon-loader"></use>
-                </svg>
-            </div>
-        `;
-
-        const childEl = this._parentEl.querySelectorAll(`.${this._childEl}`);
-        const messageEl = this._parentEl.querySelectorAll(`.${this._message}`);
-        const errorMessageEl = this._parentEl.querySelectorAll(
-            `.${this._error}`
-        );
-
-        if (childEl.length !== 0) childEl.forEach(child => child.remove());
-        if (messageEl.length !== 0) messageEl.forEach(child => child.remove());
-        if (errorMessageEl.length !== 0)
-            errorMessageEl.forEach(child => child.remove());
-
-        this._parentEl.insertAdjacentHTML('afterbegin', markup);
-    }
+    _data;
 
     async render(data) {
         try {
@@ -94,23 +17,26 @@ class BookmarksView {
             );
             childEl.length !== 0 && childEl.forEach(child => child.remove());
 
-            this.#data = data;
+            this._data = data;
 
             const spinner = this._parentEl.querySelectorAll(
                 `.${this._spinner}`
             );
 
-            this._markup = this.#generateMarkup();
+            this._markup = this._generateMarkup();
             this._hiddenMarkup = this._addHiddenClass(this._markup);
             this._parentEl.insertAdjacentHTML('beforeend', this._hiddenMarkup);
 
-            await Promise.all(
-                this._downloadImages(
-                    Array.from(
-                        this._parentEl.querySelectorAll(`.preview__fig img`)
+            await Promise.race([
+                Promise.all(
+                    this._downloadImages(
+                        Array.from(
+                            this._parentEl.querySelectorAll(`.preview__fig img`)
+                        )
                     )
-                )
-            );
+                ),
+                timeout(TIMEOUT_SEC),
+            ]);
 
             this._parentEl
                 .querySelector(`.${this._childEl}`)
@@ -122,43 +48,13 @@ class BookmarksView {
         }
     }
 
-    update(data) {
-        this.#data = data;
-        this._newMarkup = this.#generateMarkup();
-
-        const newDom = Array.from(
-            document
-                .createRange()
-                .createContextualFragment(this._newMarkup)
-                .querySelectorAll('*')
-        );
-
-        const curElements = this._parentEl.querySelectorAll('*');
-
-        newDom.forEach((newEl, i) => {
-            const curEl = curElements[i];
-
-            if (!newEl.isEqualNode(curEl)) {
-                Array.from(newEl.attributes).forEach(attr =>
-                    curEl.setAttribute(attr.name, attr.value)
-                );
-            }
-        });
-    }
-
-    _addHiddenClass(markup) {
-        const element = parseHTML(markup).querySelector(`.${this._childEl}`);
-        element.classList.add('hidden');
-        return element.outerHTML;
-    }
-
-    #generateMarkup() {
+    _generateMarkup() {
         const { searchParams } = new URL(window.location);
         const idFromURL = searchParams.get('id');
 
         return `
             <ul class="${this._childEl}">
-                ${this.#data
+                ${this._data
                     .map(
                         ({ id, imageUrl, title, publisher }) => `
                         <li class="preview">

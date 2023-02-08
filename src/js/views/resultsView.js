@@ -1,72 +1,14 @@
 import icons from '../../img/icons.svg';
-import clickTheRecipe from './clickTheRecipe';
-import { timeout, parseHTML } from '../helpers';
 import { TIMEOUT_SEC } from '../config';
+import { timeout } from '../helpers';
+import View from './View';
 
-class ResultsView {
+class ResultsView extends View {
     _parentEl = document.querySelector('.search-results');
     _childEl = 'results';
-    _spinner = 'spinner';
-    _message = 'message';
-    _error = 'error';
     _errorMessage = `No such recipes to be found!`;
-    _markup = ``;
-    _newMarkup = ``;
-    _hiddenMarkup = ``;
     _id = 'dbabfec5-dcc0-127a-24a0-22e42cbd7441';
-    #data;
-
-    constructor() {}
-
-    getData() {
-        return this.#data;
-    }
-
-    renderError(message = this._errorMessage) {
-        const markup = `
-            <div class="error">
-                <div>
-                    <svg>
-                        <use href="${icons}#icon-alert-triangle"></use>
-                    </svg>
-                </div>
-                <p>${message}</p>
-            </div>
-        `;
-
-        const childEl = this._parentEl.querySelectorAll(`.${this._childEl}`);
-        const messageEl = this._parentEl.querySelectorAll(`.${this._message}`);
-        const spinnerEl = this._parentEl.querySelectorAll(`.${this._spinner}`);
-
-        if (childEl.length !== 0) childEl.forEach(child => child.remove());
-        if (messageEl.length !== 0) messageEl.forEach(child => child.remove());
-        if (spinnerEl.length !== 0) spinnerEl.forEach(child => child.remove());
-
-        this._parentEl.insertAdjacentHTML('afterbegin', markup);
-    }
-
-    renderSpinner() {
-        const markup = `
-            <div class="spinner">
-                <svg>
-                    <use href="${icons}#icon-loader"></use>
-                </svg>
-            </div>
-        `;
-
-        const childEl = this._parentEl.querySelectorAll(`.${this._childEl}`);
-        const messageEl = this._parentEl.querySelectorAll(`.${this._message}`);
-        const errorMessageEl = this._parentEl.querySelectorAll(
-            `.${this._error}`
-        );
-
-        if (childEl.length !== 0) childEl.forEach(child => child.remove());
-        if (messageEl.length !== 0) messageEl.forEach(child => child.remove());
-        if (errorMessageEl.length !== 0)
-            errorMessageEl.forEach(child => child.remove());
-
-        this._parentEl.insertAdjacentHTML('afterbegin', markup);
-    }
+    _data;
 
     async render(data) {
         try {
@@ -76,11 +18,11 @@ class ResultsView {
 
             childEl.length !== 0 && childEl.forEach(child => child.remove());
 
-            this.#data = data;
+            this._data = data;
 
-            if (this.#data.length === 0) throw new Error(this._errorMessage);
+            if (this._data.length === 0) throw new Error(this._errorMessage);
 
-            this._markup = this.#generateMarkup();
+            this._markup = this._generateMarkup();
             this._hiddenMarkup = this._addHiddenClass(this._markup);
             const spinner = this._parentEl.querySelectorAll(
                 `.${this._spinner}`
@@ -88,13 +30,16 @@ class ResultsView {
 
             this._parentEl.insertAdjacentHTML('afterbegin', this._hiddenMarkup);
 
-            await Promise.all(
-                this._downloadImages(
-                    Array.from(
-                        this._parentEl.querySelectorAll('.preview__fig img')
+            await Promise.race([
+                Promise.all(
+                    this._downloadImages(
+                        Array.from(
+                            this._parentEl.querySelectorAll('.preview__fig img')
+                        )
                     )
-                )
-            );
+                ),
+                timeout(TIMEOUT_SEC),
+            ]);
 
             this._parentEl
                 .querySelector(`.${this._childEl}`)
@@ -104,43 +49,6 @@ class ResultsView {
         } catch (err) {
             throw err;
         }
-    }
-
-    update(data) {
-        this.#data = data;
-        this._newMarkup = this.#generateMarkup();
-
-        const newDom = Array.from(
-            document
-                .createRange()
-                .createContextualFragment(this._newMarkup)
-                .querySelectorAll('*')
-        );
-
-        const curElements = this._parentEl.querySelectorAll('*');
-
-        newDom.forEach((newEl, i) => {
-            const curEl = curElements[i];
-
-            if (
-                !newEl.isEqualNode(curEl) &&
-                newEl.firstChild?.nodeValue.trim() !== ''
-            ) {
-                curEl.textContent = newEl.textContent;
-            }
-
-            if (!newEl.isEqualNode(curEl)) {
-                Array.from(newEl.attributes).forEach(attr =>
-                    curEl.setAttribute(attr.name, attr.value)
-                );
-            }
-        });
-    }
-
-    _addHiddenClass(markup) {
-        const element = parseHTML(markup).querySelector(`.${this._childEl}`);
-        element.classList.add('hidden');
-        return element.outerHTML;
     }
 
     _downloadImages(images) {
@@ -158,13 +66,13 @@ class ResultsView {
         );
     }
 
-    #generateMarkup() {
+    _generateMarkup() {
         const { searchParams } = new URL(window.location);
         const idFromURL = searchParams.get('id');
 
         return `
             <ul class="${this._childEl}">
-            ${this.#data
+            ${this._data
                 .map(
                     ({ id, imageUrl, publisher, title }) =>
                         `

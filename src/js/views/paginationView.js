@@ -1,71 +1,12 @@
 import icons from '../../img/icons.svg';
-import { parseHTML } from '../helpers';
+import View from './View';
 
-class PaginationView {
+class PaginationView extends View {
     _parentEl = document.querySelector('.pagination');
     _childEl = `buttons`;
-    _spinner = 'spinner';
-    _message = 'message';
-    _error = 'error';
     _errorMessage = `Something went wrong with buttons :(`;
-    _markup = ``;
-    _newMarkup = ``;
-    _hiddenMarkup = ``;
     _id = 'ac1f4d84-3402-f04d-c36d-1ea3761e8018';
-    #data;
-
-    constructor() {}
-
-    renderError(message = this._errorMessage) {
-        const markup = `
-            <div class="error">
-                <div>
-                    <svg>
-                        <use href="${icons}#icon-alert-triangle"></use>
-                    </svg>
-                </div>
-                <p>${message}</p>
-            </div>
-        `;
-
-        const childEl = this._parentEl.querySelectorAll(`.${this._childEl}`);
-        const messageEl = this._parentEl.querySelectorAll(`.${this._message}`);
-        const spinnerEl = this._parentEl.querySelectorAll(`.${this._spinner}`);
-
-        if (childEl.length !== 0)
-            childEl.forEach(child => this._parentEl.removeChild(child));
-        if (messageEl.length !== 0)
-            messageEl.forEach(child => this._parentEl.removeChild(child));
-        if (spinnerEl.length !== 0)
-            spinnerEl.forEach(child => this._parentEl.removeChild(child));
-
-        this._parentEl.insertAdjacentHTML('afterbegin', markup);
-    }
-
-    renderSpinner() {
-        const markup = `
-            <div class="spinner">
-                <svg>
-                    <use href="${icons}#icon-loader"></use>
-                </svg>
-            </div>
-        `;
-
-        const childEl = this._parentEl.querySelectorAll(`.${this._childEl}`);
-        const messageEl = this._parentEl.querySelectorAll(`.${this._message}`);
-        const errorMessageEl = this._parentEl.querySelectorAll(
-            `.${this._error}`
-        );
-
-        if (childEl.length !== 0)
-            childEl.forEach(child => this._parentEl.removeChild(child));
-        if (messageEl.length !== 0)
-            messageEl.forEach(child => this._parentEl.removeChild(child));
-        if (errorMessageEl.length !== 0)
-            errorMessageEl.forEach(child => this._parentEl.removeChild(child));
-
-        this._parentEl.insertAdjacentHTML('afterbegin', markup);
-    }
+    _data;
 
     render(data) {
         try {
@@ -75,9 +16,9 @@ class PaginationView {
 
             childEl.length !== 0 && childEl.forEach(child => child.remove());
 
-            this.#data = data;
+            this._data = data;
 
-            this._markup = this.#generateMarkup();
+            this._markup = this._generateMarkup();
             this._hiddenMarkup = this._addHiddenClass(this._markup);
             const spinner = this._parentEl.querySelectorAll(
                 `.${this._spinner}`
@@ -95,14 +36,8 @@ class PaginationView {
         }
     }
 
-    _addHiddenClass(markup) {
-        const element = parseHTML(markup).querySelector(`.${this._childEl}`);
-        element.classList.add('hidden');
-        return element.outerHTML;
-    }
-
-    #generateMarkup() {
-        const { pageNumber, totalPageCount } = this.#data;
+    _generateMarkup() {
+        const { pageNumber, totalPageCount } = this._data;
         console.log(`pageNumber = ${pageNumber}`);
         console.log(`totalPageCount = ${totalPageCount}`);
 

@@ -225,6 +225,8 @@ const controlBookmarkRecipe = async function (e) {
                 : recipes
         );
 
+        bookmarksView.update(bookmarks);
+
         const { loadRecipe } = Model;
 
         await loadRecipe(clickTheRecipe._paramValue);
@@ -234,7 +236,6 @@ const controlBookmarkRecipe = async function (e) {
         } = Model;
 
         await recipeView.render(recipe);
-        bookmarksView.update(bookmarks);
     } catch (err) {
         recipeView.renderError(err);
     } finally {

@@ -1,72 +1,16 @@
 import icons from '../../img/icons.svg';
-import { parseHTML } from '../helpers';
+import View from './View';
 import { Fraction } from 'fractional';
 import clickTheServings from './clickTheServings';
+import { timeout } from '../helpers';
+import { TIMEOUT_SEC } from '../config';
 
-class RecipeView {
+class RecipeView extends View {
     _parentEl = document.querySelector('.recipe');
     _childEl = 'recipe__content';
-    _spinner = 'spinner';
-    _message = 'message';
-    _error = 'error';
     _errorMessage = `recipe 😐`;
-    _markup = ``;
-    _newMarkup = ``;
-    _hiddenMarkup = ``;
     _id = 'b9919acb-5223-330a-2f98-02cd1ed5a288';
-    #data;
-
-    constructor() {}
-
-    getData() {
-        return this.#data;
-    }
-
-    renderError(message = this._errorMessage) {
-        const markup = `
-            <div class="error">
-                <div>
-                    <svg>
-                        <use href="${icons}#icon-alert-triangle"></use>
-                    </svg>
-                </div>
-                <p>${message}</p>
-            </div>
-        `;
-
-        const childEl = this._parentEl.querySelectorAll(`.${this._childEl}`);
-        const messageEl = this._parentEl.querySelectorAll(`.${this._message}`);
-        const spinnerEl = this._parentEl.querySelectorAll(`.${this._spinner}`);
-
-        if (childEl.length !== 0) childEl.forEach(child => child.remove());
-        if (messageEl.length !== 0) messageEl.forEach(child => child.remove());
-        if (spinnerEl.length !== 0) spinnerEl.forEach(child => child.remove());
-
-        this._parentEl.insertAdjacentHTML('afterbegin', markup);
-    }
-
-    renderSpinner() {
-        const markup = `
-            <div class="spinner">
-                <svg>
-                    <use href="${icons}#icon-loader"></use>
-                </svg>
-            </div>
-        `;
-
-        const childEl = this._parentEl.querySelectorAll(`.${this._childEl}`);
-        const messageEl = this._parentEl.querySelectorAll(`.${this._message}`);
-        const errorMessageEl = this._parentEl.querySelectorAll(
-            `.${this._error}`
-        );
-
-        if (childEl.length !== 0) childEl.forEach(child => child.remove());
-        if (messageEl.length !== 0) messageEl.forEach(child => child.remove());
-        if (errorMessageEl.length !== 0)
-            errorMessageEl.forEach(child => child.remove());
-
-        this._parentEl.insertAdjacentHTML('afterbegin', markup);
-    }
+    _data;
 
     async render(data) {
         try {
@@ -76,9 +20,9 @@ class RecipeView {
 
             childEl.length !== 0 && childEl.forEach(child => child.remove());
 
-            this.#data = data;
+            this._data = data;
 
-            this._markup = this.#generateMarkup();
+            this._markup = this._generateMarkup();
             this._hiddenMarkup = this._addHiddenClass(this._markup);
             const spinner = this._parentEl.querySelectorAll(
                 `.${this._spinner}`
@@ -86,9 +30,12 @@ class RecipeView {
 
             this._parentEl.insertAdjacentHTML('beforeend', this._hiddenMarkup);
 
-            await this._downloadImage(
-                this._parentEl.querySelector(`.recipe__img`)
-            );
+            await Promise.race([
+                this._downloadImage(
+                    this._parentEl.querySelector(`.recipe__img`)
+                ),
+                timeout(TIMEOUT_SEC),
+            ]);
 
             if (spinner.length !== 0) spinner.forEach(child => child.remove());
         } catch (err) {
@@ -96,46 +43,7 @@ class RecipeView {
         }
     }
 
-    update(data) {
-        this.#data = data;
-
-        this._newMarkup = this.#generateMarkup();
-
-        // New DOM here will become like a big object which is like a virtual DOM
-        const newElements = Array.from(
-            document
-                .createRange()
-                .createContextualFragment(this._newMarkup)
-                .querySelectorAll('*')
-        );
-
-        const curElements = this._parentEl.querySelectorAll('*');
-
-        newElements.forEach((newEl, i) => {
-            const curEl = curElements[i];
-
-            if (
-                !newEl.isEqualNode(curEl) &&
-                newEl.firstChild?.nodeValue.trim() !== ''
-            ) {
-                curEl.textContent = newEl.textContent;
-            }
-
-            if (!newEl.isEqualNode(curEl)) {
-                Array.from(newEl.attributes).forEach(attr =>
-                    curEl.setAttribute(attr.name, attr.value)
-                );
-            }
-        });
-    }
-
-    _addHiddenClass(markup) {
-        const element = parseHTML(markup).querySelector(`.${this._childEl}`);
-        element.classList.add('hidden');
-        return element.outerHTML;
-    }
-
-    #generateMarkup() {
+    _generateMarkup() {
         const {
             cookingTime,
             id,
@@ -146,7 +54,7 @@ class RecipeView {
             sourceUrl,
             title,
             bookmarked,
-        } = this.#data;
+        } = this._data;
 
         clickTheServings.paramValue = servings;
 
@@ -206,7 +114,7 @@ class RecipeView {
                   <h2 class="heading--2">Recipe ingredients</h2>
                   <ul class="recipe__ingredient-list">
                     ${ingredients
-                        .map(this.#generateMarkupIngredients.bind(this))
+                        .map(this._generateMarkupIngredients.bind(this))
                         .join('')}
                   </ul>
                 </div>
@@ -233,8 +141,8 @@ class RecipeView {
         `;
     }
 
-    #generateMarkupIngredients({ description, unit, quantity }) {
-        const fraction = this.#calcFraction(quantity);
+    _generateMarkupIngredients({ description, unit, quantity }) {
+        const fraction = this._calcFraction(quantity);
 
         return `
             <li class="recipe__ingredient">
@@ -250,7 +158,7 @@ class RecipeView {
         `;
     }
 
-    #calcFraction(quantity) {
+    _calcFraction(quantity) {
         return quantity ? new Fraction(quantity).toString() : '';
     }
 
