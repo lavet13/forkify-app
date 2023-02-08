@@ -219,11 +219,12 @@ const controlBookmarkRecipe = async function (e) {
             },
         } = Model;
 
-        resultsView.update(
-            clickThePagination._paramValue
-                ? getSearchResultsPage(clickThePagination._paramValue)
-                : recipes
-        );
+        if (recipes)
+            resultsView.update(
+                clickThePagination._paramValue
+                    ? getSearchResultsPage(clickThePagination._paramValue)
+                    : recipes
+            );
 
         bookmarksView.update(bookmarks);
 
