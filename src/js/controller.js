@@ -44,7 +44,7 @@ const controlRecipes = async function (e) {
                 : recipes
         );
 
-        bookmarksView.update(bookmarks);
+        if (bookmarks.length !== 0) bookmarksView.update(bookmarks);
 
         const { loadRecipe } = Model;
 
