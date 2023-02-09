@@ -11,6 +11,8 @@ import clickTheServings from './views/clickTheServings';
 import clickTheBookmarkBtn from './views/clickTheBookmarkBtn';
 import bookmarksView from './views/bookmarksView';
 import clickBookmarkRecipe from './views/clickBookmarkRecipe';
+import addRecipeView from './views/addRecipeView';
+import { getBackProperties } from './helpers';
 import HistoryAPI from './modules/historyAPI';
 import { timeout } from './helpers';
 import { TIMEOUT_SEC } from './config';
@@ -242,6 +244,13 @@ const controlBookmarkRecipe = async function (e) {
     } finally {
         HistoryAPI.setHistory(...HistoryAPI.historyViews);
     }
+};
+
+const controlAddRecipe = function (inputs) {
+    const { sendRecipe } = Model;
+
+    const validInputs = getBackProperties(inputs);
+    sendRecipe(validInputs);
 };
 
 const controlOnLoad = function () {
@@ -482,6 +491,9 @@ const init = function () {
     clickTheServings.addHandlerRender(controlServings);
     clickTheBookmarkBtn.addHandlerRender(controlBookmarkBtn);
     clickBookmarkRecipe.addHandlerRender(controlBookmarkRecipe);
+    addRecipeView.addHandlerOpenModal();
+    addRecipeView.addHandlerCloseModal();
+    addRecipeView.addHandlerOnSubmit(controlAddRecipe);
 
     HistoryAPI.addHandlerOnLoad(controlOnLoad);
     HistoryAPI.addHandlerOnPopState(controlOnPopState);

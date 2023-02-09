@@ -26,10 +26,10 @@ export const getJSON = async function (url) {
     }
 };
 
-export const getValidProperties = recipe =>
+export const getValidProperties = (recipe, char = '_') =>
     Object.fromEntries(
         Object.entries(recipe).map(([key, value]) => {
-            const splitString = key.split('_');
+            const splitString = key.split(char);
 
             if (splitString.length < 2) return [key, value];
 
@@ -42,6 +42,25 @@ export const getValidProperties = recipe =>
             return [newKey, value];
         })
     );
+
+const splitString = function () {};
+
+export const getBackProperties = inputs => {
+    return Object.entries(inputs).map(([key, value]) => {
+        const found = key.match(/[A-Z]/g);
+        if (!found) return [key, value];
+
+        const newKey = found
+            .reduce((acc, char) => {
+                const split = key.split(char);
+                split[1] = char.toLowerCase() + split[1];
+                return [...acc, ...split];
+            }, [])
+            .join('_');
+
+        return [newKey, value];
+    });
+};
 
 const guidGenerator = function () {
     const S4 = function () {

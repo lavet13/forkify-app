@@ -82,3 +82,17 @@ export const deleteBookmark = function (id) {
     localStorage.setItem('bookmarks', JSON.stringify(state.bookmarks));
     return false;
 };
+
+export const sendRecipe = async function (recipe) {
+    console.log(recipe);
+    const res = await fetch(`${API_URL}?key=${API_KEY}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(recipe),
+    });
+
+    const result = await res.json();
+    console.log(result);
+};
