@@ -6,7 +6,10 @@ class AddRecipeView {
     _overlay = document.querySelector('.overlay');
     _form = 'upload';
 
-    constructor() {}
+    constructor() {
+        this._addHandlerOpenModal();
+        this._addHandlerCloseModal();
+    }
 
     openModal() {
         if (
@@ -43,11 +46,11 @@ class AddRecipeView {
             });
     }
 
-    addHandlerOpenModal() {
+    _addHandlerOpenModal() {
         this._parentEl.addEventListener('click', this.openModal.bind(this));
     }
 
-    addHandlerCloseModal() {
+    _addHandlerCloseModal() {
         this._modal.addEventListener('click', e => {
             e.preventDefault();
 

@@ -43,23 +43,67 @@ export const getValidProperties = (recipe, char = '_') =>
         })
     );
 
-const splitString = function () {};
-
 export const getBackProperties = inputs => {
-    return Object.entries(inputs).map(([key, value]) => {
-        const found = key.match(/[A-Z]/g);
-        if (!found) return [key, value];
+    const ingredients = Object.entries(inputs)
+        .filter(([key, value]) => key.startsWith('ingredient') && value !== '')
+        .reduce((acc, [key, value], _, arr) => {
+            const ingredient = value.replaceAll(' ', '').split(',');
+            if (ingredient.indexOf(',') !== -1)
+                throw new Error(`Invalid data was received. ${key}`);
+            if (ingredient.length !== 3)
+                throw new Error(
+                    `Wrong ingredient format! Please use the correct format :) ${key}`
+                );
+            const [quantity, unit, description] = ingredient;
+            acc.push({
+                quantity: quantity ? +quantity : null,
+                unit: !quantity ? '' : unit,
+                description,
+            });
+            return acc;
+        }, []);
 
-        const newKey = found
-            .reduce((acc, char) => {
-                const split = key.split(char);
-                split[1] = char.toLowerCase() + split[1];
-                return [...acc, ...split];
-            }, [])
-            .join('_');
+    const recipeData = Object.entries(inputs).filter(
+        ([key]) => !/ingredient-[0-9]/.test(key)
+    );
 
-        return [newKey, value];
-    });
+    return {
+        ...Object.fromEntries(
+            recipeData.map(([key, value], _, arr) => {
+                const found = key.match(/[A-Z]/g);
+                if (!found) {
+                    if (!(key === 'servings')) return [key, value];
+
+                    if (Number.isFinite(+value)) return [key, +value];
+
+                    if (!Number.isFinite(+value))
+                        throw new Error(
+                            `The value isn't a number! Please type a number! ${key}`
+                        );
+                }
+
+                const newKey = found
+                    .reduce((acc, char) => {
+                        const split = key.split(char);
+                        split[1] = char.toLowerCase() + split[1];
+                        return [...acc, ...split];
+                    }, [])
+                    .join('_');
+
+                if (newKey === 'cooking_time' && Number.isFinite(+value)) {
+                    return [newKey, +value];
+                }
+
+                if (!Number.isFinite(+value) && newKey === 'cooking_time')
+                    throw new Error(
+                        `The value isn't a number! Please type a number instead on a field ${newKey}`
+                    );
+
+                return [newKey, value];
+            })
+        ),
+        ingredients,
+    };
 };
 
 const guidGenerator = function () {

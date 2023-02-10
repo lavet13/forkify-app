@@ -83,16 +83,25 @@ export const deleteBookmark = function (id) {
     return false;
 };
 
-export const sendRecipe = async function (recipe) {
-    console.log(recipe);
-    const res = await fetch(`${API_URL}?key=${API_KEY}`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(recipe),
-    });
+export const uploadRecipe = async function (recipe) {
+    try {
+        const res = await fetch(`${API_URL}?key=${API_KEY}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(recipe),
+        });
 
-    const result = await res.json();
-    console.log(result);
+        const { status } = res;
+
+        if (!res.ok) {
+            const { message } = await res.json();
+            throw new Error(`Error: ${message} (${status})`);
+        }
+
+        return await res.json();
+    } catch (err) {
+        throw err;
+    }
 };

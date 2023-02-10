@@ -246,11 +246,15 @@ const controlBookmarkRecipe = async function (e) {
     }
 };
 
-const controlAddRecipe = function (inputs) {
-    const { sendRecipe } = Model;
+const controlAddRecipe = async function (inputs) {
+    try {
+        const { uploadRecipe } = Model;
 
-    const validInputs = getBackProperties(inputs);
-    sendRecipe(validInputs);
+        const validInputs = getBackProperties(inputs);
+        console.log(await uploadRecipe(validInputs));
+    } catch (err) {
+        console.error(err);
+    }
 };
 
 const controlOnLoad = function () {
@@ -491,8 +495,6 @@ const init = function () {
     clickTheServings.addHandlerRender(controlServings);
     clickTheBookmarkBtn.addHandlerRender(controlBookmarkBtn);
     clickBookmarkRecipe.addHandlerRender(controlBookmarkRecipe);
-    addRecipeView.addHandlerOpenModal();
-    addRecipeView.addHandlerCloseModal();
     addRecipeView.addHandlerOnSubmit(controlAddRecipe);
 
     HistoryAPI.addHandlerOnLoad(controlOnLoad);
