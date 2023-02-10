@@ -12,9 +12,8 @@ import clickTheBookmarkBtn from './views/clickTheBookmarkBtn';
 import bookmarksView from './views/bookmarksView';
 import clickBookmarkRecipe from './views/clickBookmarkRecipe';
 import addRecipeView from './views/addRecipeView';
-import { getBackProperties } from './helpers';
 import HistoryAPI from './modules/historyAPI';
-import { timeout } from './helpers';
+import { getValidProperties, timeout } from './helpers';
 import { TIMEOUT_SEC } from './config';
 
 import * as Model from '../js/model';
@@ -194,7 +193,7 @@ const controlBookmarkBtn = async function (btn) {
         }
 
         bookmarksView.renderSpinner();
-        bookmarksView.render(bookmarks);
+        await bookmarksView.render(bookmarks);
     } catch (err) {
         bookmarksView.renderError(err);
     }
@@ -248,31 +247,58 @@ const controlBookmarkRecipe = async function (e) {
 
 const controlAddRecipe = async function (inputs) {
     try {
-        const { uploadRecipe } = Model;
+        if (recipeView._parentEl.querySelector(`.${recipeView._spinner}`))
+            return;
 
-        const validInputs = getBackProperties(inputs);
-        console.log(await uploadRecipe(validInputs));
+        const { uploadRecipe } = Model;
+        await uploadRecipe(inputs);
+
+        const {
+            state: { recipe },
+            addBookmark,
+        } = Model;
+
+        addBookmark(recipe);
+        console.log(recipe);
+
+        recipeView.renderSpinner();
+
+        clickTheRecipe._paramValue = decodeURIComponent(recipe.id);
+
+        HistoryAPI.setURL(clickTheRecipe._param, clickTheRecipe._paramValue);
+
+        // render recipe
+        await recipeView.render(recipe);
+
+        // close form
+        addRecipeView.closeModal();
     } catch (err) {
         console.error(err);
+    } finally {
+        HistoryAPI.setHistory(...HistoryAPI.historyViews);
     }
 };
 
-const controlOnLoad = function () {
-    if (localStorage.getItem('bookmarks')) {
-        let {
-            state: { bookmarks },
-        } = Model;
+const controlOnLoad = async function () {
+    try {
+        if (localStorage.getItem('bookmarks')) {
+            let {
+                state: { bookmarks },
+            } = Model;
 
-        bookmarks = JSON.parse(localStorage.getItem('bookmarks'));
+            bookmarks = JSON.parse(localStorage.getItem('bookmarks'));
 
-        if (bookmarks.length === 0) {
-            bookmarksView.renderMessage();
+            if (bookmarks.length === 0) {
+                bookmarksView.renderMessage();
+            }
+
+            if (bookmarks.length !== 0) {
+                bookmarksView.renderSpinner();
+                await bookmarksView.render(bookmarks);
+            }
         }
-
-        if (bookmarks.length !== 0) {
-            bookmarksView.renderSpinner();
-            bookmarksView.render(bookmarks);
-        }
+    } catch (err) {
+        console.error(err);
     }
 
     const { searchParams } = new URL(window.location);

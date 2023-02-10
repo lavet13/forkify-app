@@ -52,6 +52,7 @@ class BookmarksView extends View {
         const { searchParams } = new URL(window.location);
         const idFromURL = searchParams.get('id');
 
+        console.log(this._data);
         return `
             <ul class="${this._childEl}">
                 ${this._data

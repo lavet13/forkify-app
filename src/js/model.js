@@ -1,5 +1,5 @@
 import { API_URL, API_KEY, RES_PER_PAGE } from './config';
-import { getJSON, getValidProperties } from './helpers';
+import { getJSON, getValidProperties, sendJSON } from './helpers';
 
 export const state = {
     recipe: {},
@@ -83,24 +83,76 @@ export const deleteBookmark = function (id) {
     return false;
 };
 
-export const uploadRecipe = async function (recipe) {
+export const uploadRecipe = async inputs => {
     try {
-        const res = await fetch(`${API_URL}?key=${API_KEY}`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(recipe),
-        });
+        const ingredients = Object.entries(inputs)
+            .filter(
+                ([key, value]) => key.startsWith('ingredient') && value !== ''
+            )
+            .reduce((acc, [key, value], _, arr) => {
+                const ingredient = value.replaceAll(' ', '').split(',');
+                if (ingredient.indexOf(',') !== -1)
+                    throw new Error(`Invalid data was received. ${key}`);
+                if (ingredient.length !== 3)
+                    throw new Error(
+                        `Wrong ingredient format! Please use the correct format :) ${key}`
+                    );
+                const [quantity, unit, description] = ingredient;
+                acc.push({
+                    quantity: quantity ? +quantity : null,
+                    unit: !quantity ? '' : unit,
+                    description,
+                });
+                return acc;
+            }, []);
 
-        const { status } = res;
+        const otherData = Object.entries(inputs).filter(
+            ([key]) => !/ingredient-[0-9]/.test(key)
+        );
 
-        if (!res.ok) {
-            const { message } = await res.json();
-            throw new Error(`Error: ${message} (${status})`);
-        }
+        const recipe = {
+            ...Object.fromEntries(
+                otherData.map(([key, value]) => {
+                    const found = key.match(/[A-Z]/g);
+                    if (!found) {
+                        if (!(key === 'servings')) return [key, value];
 
-        return await res.json();
+                        if (Number.isFinite(+value)) return [key, +value];
+
+                        if (!Number.isFinite(+value))
+                            throw new Error(
+                                `The value isn't a number! Please type a number! ${key}`
+                            );
+                    }
+
+                    const newKey = found
+                        .reduce((acc, char) => {
+                            const split = key.split(char);
+                            split[1] = char.toLowerCase() + split[1];
+                            return [...acc, ...split];
+                        }, [])
+                        .join('_');
+
+                    if (newKey === 'cooking_time' && Number.isFinite(+value)) {
+                        return [newKey, +value];
+                    }
+
+                    if (!Number.isFinite(+value) && newKey === 'cooking_time')
+                        throw new Error(
+                            `The value isn't a number! Please type a number instead on a field ${newKey}`
+                        );
+
+                    return [newKey, value];
+                })
+            ),
+            ingredients,
+        };
+
+        const {
+            data: { recipe: recipeData },
+        } = await sendJSON(`${API_URL}?key=${API_KEY}`, recipe);
+
+        state.recipe = recipeData;
     } catch (err) {
         throw err;
     }

@@ -1,8 +1,6 @@
-import { getValidProperties } from '../helpers';
-
 class AddRecipeView {
-    _parentEl = document.querySelector('.nav__btn--add-recipe');
-    _modal = document.querySelector('.add-recipe-window');
+    _btn = document.querySelector('.nav__btn--add-recipe');
+    _parentEl = document.querySelector('.add-recipe-window');
     _overlay = document.querySelector('.overlay');
     _form = 'upload';
 
@@ -13,26 +11,26 @@ class AddRecipeView {
 
     openModal() {
         if (
-            this._modal.classList.contains('hidden') ||
+            this._parentEl.classList.contains('hidden') ||
             this._overlay.classList.contains('hidden')
         ) {
-            this._modal.classList.remove('hidden');
+            this._parentEl.classList.remove('hidden');
             this._overlay.classList.remove('hidden');
         }
     }
 
     closeModal() {
         if (
-            !this._modal.classList.contains('hidden') ||
+            !this._parentEl.classList.contains('hidden') ||
             !this._overlay.classList.contains('hidden')
         ) {
-            this._modal.classList.add('hidden');
+            this._parentEl.classList.add('hidden');
             this._overlay.classList.add('hidden');
         }
     }
 
     addHandlerOnSubmit(handler) {
-        this._modal
+        this._parentEl
             .querySelector(`.${this._form}`)
             .addEventListener('click', e => {
                 const btn = e.target.closest('.upload__btn');
@@ -47,11 +45,11 @@ class AddRecipeView {
     }
 
     _addHandlerOpenModal() {
-        this._parentEl.addEventListener('click', this.openModal.bind(this));
+        this._btn.addEventListener('click', this.openModal.bind(this));
     }
 
     _addHandlerCloseModal() {
-        this._modal.addEventListener('click', e => {
+        this._parentEl.addEventListener('click', e => {
             e.preventDefault();
 
             if (e.target.closest('.btn--close-modal')) this.closeModal();
