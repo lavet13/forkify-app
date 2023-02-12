@@ -12,6 +12,7 @@ class BookmarksView extends View {
 
     async render(data) {
         try {
+            console.log(this._data);
             const childEl = this._parentEl.querySelectorAll(
                 `.${this._childEl}`
             );
@@ -52,8 +53,8 @@ class BookmarksView extends View {
         const { searchParams } = new URL(window.location);
         const idFromURL = searchParams.get('id');
 
-        console.log(this._data);
-        return `
+        if (Array.isArray(this._data))
+            return `
             <ul class="${this._childEl}">
                 ${this._data
                     .map(
@@ -84,6 +85,35 @@ class BookmarksView extends View {
                     .join('')}
             </ul>
         `;
+
+        if (!Array.isArray(this._data)) {
+            const { id, imageUrl, title, publisher } = this._data;
+
+            return `<ul class="${this._childEl}">
+                    <li class="preview">
+                        <a class="preview__link ${
+                            idFromURL === id ? 'preview__link--active' : ''
+                        }" href="?id=${id}">
+                            <figure class="preview__fig">
+                                <img src="${imageUrl}" alt="${title}" />
+                            </figure>
+                            <div class="preview__data">
+                                <h4 class="preview__title">
+                                    ${title}
+                                </h4>
+                                <p class="preview__publisher">
+                                    ${publisher}
+                                </p>
+                                <div class="preview__user-generated">
+                                    <svg>
+                                        <use href="${icons}#icon-user"></use>
+                                    </svg>
+                                </div>
+                            </div>
+                        </a>
+                    </li>
+                </ul>`;
+        }
     }
 
     _downloadImages(images) {

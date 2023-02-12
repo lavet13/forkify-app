@@ -254,12 +254,12 @@ const controlAddRecipe = async function (inputs) {
         await uploadRecipe(inputs);
 
         const {
-            state: { recipe },
+            state: { recipe, bookmarks },
             addBookmark,
         } = Model;
+        console.log(bookmarks);
 
         addBookmark(recipe);
-        console.log(recipe);
 
         recipeView.renderSpinner();
 
@@ -269,6 +269,7 @@ const controlAddRecipe = async function (inputs) {
 
         // render recipe
         await recipeView.render(recipe);
+        await bookmarksView.render(recipe);
 
         // close form
         addRecipeView.closeModal();

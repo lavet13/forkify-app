@@ -152,7 +152,7 @@ export const uploadRecipe = async inputs => {
             data: { recipe: recipeData },
         } = await sendJSON(`${API_URL}?key=${API_KEY}`, recipe);
 
-        state.recipe = recipeData;
+        state.recipe = getValidProperties(recipeData);
     } catch (err) {
         throw err;
     }
