@@ -516,6 +516,7 @@ const controlOnPopState = function (e) {
 };
 
 const init = function () {
+    console.log('Welcome to the application!');
     clickTheRecipe.addHandlerRender(controlRecipes);
     searchView.addHandlerRender(controlSearchResults);
     clickThePagination.addHandlerRender(controlPaginationResults);
